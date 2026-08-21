@@ -55,10 +55,24 @@ Write-Host "OK: architecture x64"
 
 # 3. Version matches expected version
 if ($Version -ne "") {
+    # .NET trims trailing zero components (0.1.0.0 -> "0.1"), so compare
+    # numerically component by component (first three parts).
     $fileVersion = (Get-Item $exe).VersionInfo.FileVersion
-    $fileVersion = $fileVersion -replace "\.0$", ""  # strip trailing .0 from FileVersion
     $cleanVersion = $Version.TrimStart("v")
-    if ($fileVersion -ne $cleanVersion) {
+
+    function Get-VersionParts([string]$version) {
+        $parts = @($version -split '\.' | ForEach-Object {
+            $n = 0
+            [int]::TryParse($_, [ref]$n) | Out-Null
+            $n
+        })
+        while ($parts.Count -lt 3) { $parts += 0 }
+        return $parts[0..2]
+    }
+
+    $exeParts = Get-VersionParts $fileVersion
+    $expParts = Get-VersionParts $cleanVersion
+    if (($exeParts -join '.') -ne ($expParts -join '.')) {
         Fail "version mismatch: exe reports '$fileVersion', expected '$cleanVersion'"
     }
     Write-Host "OK: version $fileVersion"
