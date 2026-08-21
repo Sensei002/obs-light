@@ -8,6 +8,8 @@
     Path to the CMake build directory (contains rundir/<config>/).
 .PARAMETER Version
     Expected version string (e.g. 0.1.0); used for the exe version check.
+.PARAMETER Config
+    CMake build configuration subdirectory under rundir (default Release).
 .PARAMETER OutDir
     Directory to write SHA256SUMS.txt into (defaults to build dir root).
 #>
@@ -15,6 +17,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$BuildDir,
     [string]$Version = "",
+    [string]$Config = "Release",
     [string]$OutDir = ""
 )
 
@@ -25,7 +28,7 @@ function Fail([string]$message) {
     exit 1
 }
 
-$releaseDir = Join-Path $BuildDir "rundir\Release"
+$releaseDir = Join-Path $BuildDir "rundir\$Config"
 $binDir = Join-Path $releaseDir "bin\64bit"
 $pluginDir = Join-Path $releaseDir "obs-plugins\64bit"
 

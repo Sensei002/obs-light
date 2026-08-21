@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -115,7 +116,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 	UpdatePreview();
 
 	QMetaObject::invokeMethod(this, [this]() {
-		if (AppConfig::StartMinimized())
+		bool startMinimized = AppConfig::StartMinimized() ||
+				      QCoreApplication::arguments().contains(
+					      QStringLiteral("-minimized"));
+		if (startMinimized)
 			showMinimized();
 		else
 			show();

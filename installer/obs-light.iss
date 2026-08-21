@@ -1,11 +1,19 @@
 ; obs-light Inno Setup installer script
 ; Produces obs-light-Setup-x64.exe
+;
+; Build from CI:
+;   ISCC.exe /DMyAppVersion=0.1.0 /DConfigName=RelWithDebInfo obs-light.iss
 
 #define MyAppName "obs-light"
+#ifndef MyAppVersion
 #define MyAppVersion "0.1.0"
+#endif
 #define MyAppPublisher "obs-light contributors"
-#define MyAppURL "https://github.com/obs-light/obs-light"
+#define MyAppURL "https://github.com/Sensei002/obs-light"
 #define MyAppExeName "obs-light.exe"
+#ifndef ConfigName
+#define ConfigName "Release"
+#endif
 
 [Setup]
 AppId={{B0A1E2C3-D4E5-6789-ABCD-EF0123456789}
@@ -36,25 +44,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"; Flags: checkedonce
 
 [Files]
-; Executable
-Source: "..\build\rundir\Release\bin\64bit\{#MyAppExeName}"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion
-
-; Core OBS DLLs
-Source: "..\build\rundir\Release\bin\64bit\obs*.dll"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion
-Source: "..\build\rundir\Release\bin\64bit\libobs*.dll"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion
+; Executable and all runtime files: Qt DLLs and plugin folders (platforms/,
+; styles/, ...), obs.dll, libobs-d3d11.dll, ffmpeg-mux, ...
+Source: "..\build\rundir\{#ConfigName}\bin\64bit\*"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Plugins
-Source: "..\build\rundir\Release\obs-plugins\64bit\*.dll"; DestDir: "{app}\obs-plugins\64bit"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\build\rundir\{#ConfigName}\obs-plugins\64bit\*.dll"; DestDir: "{app}\obs-plugins\64bit"; Flags: ignoreversion skipifsourcedoesntexist
 
-; Plugin data (locale, etc.)
-Source: "..\build\rundir\Release\data\obs-plugins\*"; DestDir: "{app}\data\obs-plugins"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-
-; Graphics hook executables (win-capture)
-Source: "..\build\rundir\Release\data\obs-plugins\win-capture\*"; DestDir: "{app}\data\obs-plugins\win-capture"; Flags: ignoreversion recursesubdirs skipifsourcedoesntexist
-Source: "..\build\rundir\Release\obs-plugins\win-capture\*"; DestDir: "{app}\obs-plugins\win-capture"; Flags: ignoreversion recursesubdirs skipifsourcedoesntexist
-
-; FFmpeg-mux helper
-Source: "..\build\rundir\Release\data\obs-plugins\obs-ffmpeg\*"; DestDir: "{app}\data\obs-plugins\obs-ffmpeg"; Flags: ignoreversion recursesubdirs skipifsourcedoesntexist
+; Plugin data (locale files, graphics-hook executables, compatibility data)
+Source: "..\build\rundir\{#ConfigName}\data\obs-plugins\*"; DestDir: "{app}\data\obs-plugins"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 ; License
 Source: "..\COPYING"; DestDir: "{app}"; Flags: ignoreversion

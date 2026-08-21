@@ -13,6 +13,27 @@ if(NOT DEFINED OBS_PARENT_ARCHITECTURE)
 endif()
 
 if(OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
+  # obs-light fork: forward settings to the child architecture builds, which
+  # configure with their own cache and therefore do not inherit -D flags:
+  #  - ENABLE_FRONTEND is OFF in children: the Qt frontend is x64-only and
+  #    the child builds exist solely for the 32-bit graphics-hook executables
+  #  - OBS_VERSION_OVERRIDE must match the parent, otherwise git describe
+  #    falls back to a "vX.Y.Z" tag that fails project(VERSION ...)
+  #  - remaining flags keep the child configuration consistent with the parent
+  set(_obs_child_args -DENABLE_FRONTEND:BOOL=OFF)
+  if(DEFINED OBS_VERSION_OVERRIDE)
+    list(APPEND _obs_child_args "-DOBS_VERSION_OVERRIDE:STRING=${OBS_VERSION_OVERRIDE}")
+  endif()
+  if(DEFINED ENABLE_SCRIPTING)
+    list(APPEND _obs_child_args "-DENABLE_SCRIPTING:BOOL=${ENABLE_SCRIPTING}")
+  endif()
+  if(DEFINED ENABLE_NEW_MPEGTS_OUTPUT)
+    list(APPEND _obs_child_args "-DENABLE_NEW_MPEGTS_OUTPUT:BOOL=${ENABLE_NEW_MPEGTS_OUTPUT}")
+  endif()
+  if(DEFINED ENABLE_COMPAT_UPDATES)
+    list(APPEND _obs_child_args "-DENABLE_COMPAT_UPDATES:BOOL=${ENABLE_COMPAT_UPDATES}")
+  endif()
+
   if(OBS_PARENT_ARCHITECTURE STREQUAL ARM64)
     execute_process(
       COMMAND
@@ -20,6 +41,7 @@ if(OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
         "x64,version=${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}" -G "${CMAKE_GENERATOR}"
         -DCMAKE_SYSTEM_VERSION:STRING='${CMAKE_SYSTEM_VERSION}' -DVIRTUALCAM_GUID:STRING=${VIRTUALCAM_GUID}
         -DCMAKE_MESSAGE_LOG_LEVEL:STRING=${CMAKE_MESSAGE_LOG_LEVEL} -DOBS_PARENT_ARCHITECTURE:STRING=ARM64
+        ${_obs_child_args}
       RESULT_VARIABLE _process_result
       COMMAND_ERROR_IS_FATAL ANY
     )
@@ -29,6 +51,7 @@ if(OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
         "Win32,version=${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}" -G "${CMAKE_GENERATOR}"
         -DCMAKE_SYSTEM_VERSION:STRING='${CMAKE_SYSTEM_VERSION}' -DVIRTUALCAM_GUID:STRING=${VIRTUALCAM_GUID}
         -DCMAKE_MESSAGE_LOG_LEVEL:STRING=${CMAKE_MESSAGE_LOG_LEVEL} -DOBS_PARENT_ARCHITECTURE:STRING=ARM64
+        ${_obs_child_args}
       RESULT_VARIABLE _process_result
       COMMAND_ERROR_IS_FATAL ANY
     )
@@ -39,10 +62,12 @@ if(OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
         "Win32,version=${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}" -G "${CMAKE_GENERATOR}"
         -DCMAKE_SYSTEM_VERSION:STRING='${CMAKE_SYSTEM_VERSION}' -DVIRTUALCAM_GUID:STRING=${VIRTUALCAM_GUID}
         -DCMAKE_MESSAGE_LOG_LEVEL:STRING=${CMAKE_MESSAGE_LOG_LEVEL} -DOBS_PARENT_ARCHITECTURE:STRING=x64
+        ${_obs_child_args}
       RESULT_VARIABLE _process_result
       COMMAND_ERROR_IS_FATAL ANY
     )
   endif()
+  unset(_obs_child_args)
 else()
   # target_disable_feature: Stub macro for child architecture builds
   macro(target_disable_feature)

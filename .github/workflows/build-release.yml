@@ -109,7 +109,7 @@ jobs:
         run: |
           $expect = ""
           if ("${{ github.ref }}" -like "refs/tags/v*") { $expect = "${{ steps.version.outputs.version }}" }
-          .\scripts\validate.ps1 -BuildDir "$pwd\build" -Version $expect
+          .\scripts\validate.ps1 -BuildDir "$pwd\build" -Version $expect -Config "${{ env.BUILD_TYPE }}"
 
       - name: Upload build artifacts (CI)
         uses: actions/upload-artifact@v4
@@ -123,7 +123,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          & $iscc /DMyAppVersion="${{ steps.version.outputs.version }}" installer\obs-light.iss
+          & $iscc /DMyAppVersion="${{ steps.version.outputs.version }}" /DConfigName="${{ env.BUILD_TYPE }}" installer\obs-light.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed (exit $LASTEXITCODE)" }
           if (-not (Test-Path "build\installer\obs-light-Setup-x64.exe")) {
             throw "Installer build failed"
