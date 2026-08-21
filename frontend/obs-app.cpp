@@ -283,10 +283,9 @@ int OBSApp::RunSmokeTest()
 			failures++;
 	}
 
-	/* Required encoder types */
+	/* Required encoder types (NVENC encoders only register when an NVIDIA
+	 * driver is present, so they are verified separately below). */
 	static const char *required_encoders[] = {
-		"obs_nvenc_h264_tex",
-		"obs_nvenc_h264_soft",
 		"obs_x264",
 		"ffmpeg_aac",
 	};
@@ -303,6 +302,42 @@ int OBSApp::RunSmokeTest()
 		blog(LOG_INFO, "smoke test encoder '%s': %s", id, found ? "OK" : "MISSING");
 		if (!found)
 			failures++;
+	}
+
+	/* NVENC: required on machines with an NVIDIA GPU, expected to be absent
+	 * on GPU-less CI runners (obs-nvenc's module load requires the driver). */
+	static const char *nvenc_encoders[] = {
+		"obs_nvenc_h264_tex",
+		"obs_nvenc_h264_soft",
+	};
+	bool nvenc_found = false;
+	for (const char *id : nvenc_encoders) {
+		const char *enc_id;
+		size_t idx = 0;
+		while (obs_enum_encoder_types(idx++, &enc_id)) {
+			if (strcmp(enc_id, id) == 0) {
+				nvenc_found = true;
+				break;
+			}
+		}
+	}
+	if (!nvenc_found) {
+		blog(LOG_INFO, "smoke test NVENC encoders: SKIPPED (no NVIDIA GPU/driver)");
+	} else {
+		for (const char *id : nvenc_encoders) {
+			bool found = false;
+			const char *enc_id;
+			size_t idx = 0;
+			while (obs_enum_encoder_types(idx++, &enc_id)) {
+				if (strcmp(enc_id, id) == 0) {
+					found = true;
+					break;
+				}
+			}
+			blog(LOG_INFO, "smoke test encoder '%s': %s", id, found ? "OK" : "MISSING");
+			if (!found)
+				failures++;
+		}
 	}
 
 	/* Required output types */

@@ -83,9 +83,11 @@ build, smoke test, and validation all pass.
 The headless smoke test (`obs-light.exe --smoke-test`) additionally verifies
 that libobs starts, all modules load, and the required source types
 (`game_capture`, `monitor_capture`, `wasapi_process_output_capture`),
-encoder types (`obs_nvenc_h264_tex`, `obs_nvenc_h264_soft`, `obs_x264`,
-`ffmpeg_aac`) and output types (`ffmpeg_muxer`, `replay_buffer`) are
-registered.
+encoder types (`obs_x264`, `ffmpeg_aac`) and output types (`ffmpeg_muxer`,
+`replay_buffer`) are registered. The NVENC encoders
+(`obs_nvenc_h264_tex`, `obs_nvenc_h264_soft`) are only registered when an
+NVIDIA driver is present, so the smoke test requires them on machines with
+a GPU and skips them on GPU-less CI runners.
 
 Notes on the smoke test:
 
