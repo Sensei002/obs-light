@@ -2,6 +2,8 @@
 #include <cstring>
 #include <string>
 
+#include <Windows.h>
+
 #include <QApplication>
 #include <QIcon>
 
@@ -27,11 +29,13 @@ static bool HasArg(int argc, char *argv[], const char *arg)
 int main(int argc, char *argv[])
 {
 	if (HasArg(argc, argv, "--version")) {
+		AttachConsole(ATTACH_PARENT_PROCESS);
 		printf("obs-light %s\n", obs_get_version_string());
 		return 0;
 	}
 
 	if (HasArg(argc, argv, "--smoke-test")) {
+		AttachConsole(ATTACH_PARENT_PROCESS);
 		OBSApp smokeApp;
 		return smokeApp.RunSmokeTest();
 	}

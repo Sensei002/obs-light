@@ -100,8 +100,11 @@ jobs:
           $exe = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit\obs-light.exe"
           if (-not (Test-Path $exe)) { throw "obs-light.exe not found" }
           Write-Host "Running smoke test..."
-          & $exe --smoke-test
-          if ($LASTEXITCODE -ne 0) { throw "Smoke test failed (exit code $LASTEXITCODE)" }
+          # GUI-subsystem executables are not waited on by PowerShell when
+          # invoked with &, so use Start-Process to get the real exit code.
+          $p = Start-Process -FilePath $exe -ArgumentList "--smoke-test" -Wait -PassThru
+          Write-Host "Smoke test exit code: $($p.ExitCode)"
+          if ($p.ExitCode -ne 0) { throw "Smoke test failed (exit code $($p.ExitCode))" }
           Write-Host "Smoke test passed"
 
       - name: Validate artifacts
