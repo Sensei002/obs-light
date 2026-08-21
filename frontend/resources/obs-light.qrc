@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>obs-light.png</file>
+    </qresource>
+</RCC>

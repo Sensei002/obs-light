@@ -1,0 +1,195 @@
+# Single obs-light CI/CD workflow.
+#
+# Normal CI builds (push to main):
+#   Checkout, install deps, configure, build, package, upload build artifacts.
+#
+# Tagged releases (git push --tags v*):
+#   Same as above, plus:
+#   - Build installer with Inno Setup
+#   - Create GitHub Release with installer, portable ZIP and SHA256 checksums
+#
+# workflow_dispatch:
+#   Build with explicit version tag "manual" for testing.
+
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version override (e.g. 0.1.0-dev)"
+        required: false
+        type: string
+
+env:
+  # Pin OBS Studio version for the fork
+  OBS_STUDIO_VERSION: 32.2.2
+  # CMake build type
+  BUILD_TYPE: RelWithDebInfo
+  # Qt version (install via aqtinstall)
+  QT_VERSION: "6.8.2"
+  QT_ARCH: "win64_msvc2022_64"
+
+jobs:
+  build:
+    name: Windows x64
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Set up Visual Studio
+        run: |
+          # windows-2022 runner includes Visual Studio 2022 with MSVC v143
+          # Validate that the C++ toolset is present
+          if (-not (Test-Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC")) {
+            Write-Host "::warning::Visual Studio C++ toolset not found, installing..."
+            choco install visualstudio2022buildtools --package-parameters="--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --passive"
+          }
+          Write-Host "Visual Studio ready"
+
+      - name: Install aqtinstall (Qt)
+        run: |
+          pip install aqtinstall
+          aqt install-qt windows desktop ${{ env.QT_VERSION }} ${{ env.QT_ARCH }} -O D:\Qt
+
+      - name: Download obs-deps
+        run: |
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/obsproject/obs-deps/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -match 'obs-deps-windows-x64' -and $_.name -notmatch '-src' } | Select-Object -First 1
+          if (-not $asset) { throw "obs-deps asset not found" }
+          Write-Host "Downloading $($asset.name)"
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "$env:TEMP\obs-deps.zip"
+          Expand-Archive -Path "$env:TEMP\obs-deps.zip" -DestinationPath "D:\obs-deps" -Force
+          Write-Host "obs-deps extracted to D:\obs-deps"
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { throw "Inno Setup not installed" }
+          Write-Host "Inno Setup ready: $iscc"
+
+      - name: Compute version
+        id: version
+        run: |
+          $ref = "${{ github.ref_name }}"
+          if ($ref -eq "main") { $version = "0.0.0-ci" }
+          elseif ($ref -match "^v\d+\.\d+\.\d+") { $version = $ref.TrimStart("v") }
+          else { $version = "0.0.0-$ref" }
+          Write-Host "Version: $version"
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build `
+            -G "Visual Studio 17 2022" -A x64 -T v143 `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_PREFIX_PATH="D:\Qt\${{ env.QT_VERSION }}\${{ env.QT_ARCH }};D:\obs-deps" `
+            -DQTDIR="D:\Qt\${{ env.QT_VERSION }}\${{ env.QT_ARCH }}" `
+            -DENABLE_FRONTEND=ON -DENABLE_PLUGINS=ON `
+            -DENABLE_SCRIPTING=OFF `
+            -DENABLE_NVENC=ON -DENABLE_HEVC=ON `
+            -DENABLE_NEW_MPEGTS_OUTPUT=OFF `
+            -DENABLE_COMPAT_UPDATES=OFF `
+            -DOBS_VERSION_OVERRIDE="${{ steps.version.outputs.version }}" `
+            -Wno-dev
+
+      - name: Build
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Run smoke test
+        run: |
+          $exe = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit\obs-light.exe"
+          if (-not (Test-Path $exe)) { throw "obs-light.exe not found" }
+          Write-Host "Running smoke test..."
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { throw "Smoke test failed (exit code $LASTEXITCODE)" }
+          Write-Host "Smoke test passed"
+
+      - name: Validate artifacts
+        shell: pwsh
+        run: |
+          $expect = ""
+          if ("${{ github.ref }}" -like "refs/tags/v*") { $expect = "${{ steps.version.outputs.version }}" }
+          .\scripts\validate.ps1 -BuildDir "$pwd\build" -Version $expect
+
+      - name: Upload build artifacts (CI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-light-${{ env.BUILD_TYPE }}-${{ github.sha }}
+          path: build\rundir\${{ env.BUILD_TYPE }}\
+          retention-days: 30
+
+      # ---- Release steps (only on version tags) ----
+      - name: Build installer
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $iscc /DMyAppVersion="${{ steps.version.outputs.version }}" installer\obs-light.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed (exit $LASTEXITCODE)" }
+          if (-not (Test-Path "build\installer\obs-light-Setup-x64.exe")) {
+            throw "Installer build failed"
+          }
+          Write-Host "Installer built"
+
+      - name: Create portable ZIP
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          Compress-Archive -Path "build\rundir\${{ env.BUILD_TYPE }}\*" -DestinationPath "build\obs-light-x64.zip" -Force
+
+      - name: Generate SHA256SUMS
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          Get-ChildItem -Path build\installer -Filter "*.exe" | Get-FileHash -Algorithm SHA256 | ForEach-Object {
+            "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)"
+          } | Out-File -FilePath build\SHA256SUMS.txt -Encoding ascii
+          Get-ChildItem -Path build -Filter "obs-light-x64.zip" | Get-FileHash -Algorithm SHA256 | ForEach-Object {
+            "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)"
+          } | Out-File -FilePath build\SHA256SUMS.txt -Encoding ascii -Append
+          Write-Host "SHA256SUMS:"
+          Get-Content build\SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: obs-light ${{ steps.version.outputs.version }}
+          body: |
+            ## obs-light ${{ github.ref_name }}
+
+            **Lightweight Windows game recording and instant replay.**
+
+            Based on OBS Studio ${{ env.OBS_STUDIO_VERSION }}.
+
+            ### What's new
+            - See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}) for details.
+
+            ### Installation
+            Download the installer (obs-light-Setup-x64.exe) and run it.
+            A portable ZIP is also available.
+
+            ### System requirements
+            - Windows 10 or 11 (x64)
+            - NVIDIA GPU with NVENC (GTX 950 or newer recommended)
+            - Hardware-Accelerated GPU Scheduling (HAGS) enabled
+
+            ### Known limitations
+            - GPU-accelerated preview requires a Direct3D 11 compatible GPU
+            - Smoke tests pass on CI; full GUI/recording tests require physical hardware
+          files: |
+            build\installer\obs-light-Setup-x64.exe
+            build\obs-light-x64.zip
+            build\SHA256SUMS.txt
+          fail_on_unmatched_files: true
