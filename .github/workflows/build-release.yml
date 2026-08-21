@@ -96,6 +96,21 @@ jobs:
         run: |
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
+      - name: Bundle runtime dependencies
+        run: |
+          # Copy all DLLs from the OBS dependency packages into the run dir.
+          # libobs links zlib.dll/jansson.dll, and win-capture pulls in
+          # curl.dll via file-updater; OBS's dependency bundling only covers
+          # the frontend's direct link libraries, so without this step the
+          # executable would show a missing-DLL dialog at startup and hang
+          # forever on headless runners.
+          $dest = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit"
+          if (-not (Test-Path $dest)) { throw "run dir not found: $dest" }
+          $dlls = Get-ChildItem ".deps\obs-deps-*\bin\*.dll" -ErrorAction SilentlyContinue
+          if (-not $dlls) { throw "no obs-deps DLLs found under .deps" }
+          $dlls | Copy-Item -Destination $dest -Force
+          Write-Host "Bundled $($dlls.Count) dependency DLLs into $dest"
+
       - name: Run smoke test
         timeout-minutes: 10
         run: |
