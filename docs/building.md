@@ -16,11 +16,13 @@ The single workflow `.github/workflows/build-release.yml` runs on the
 
 1. Checks out the repository.
 2. Verifies/installs the Visual Studio 2022 C++ toolset.
-3. Installs Qt 6.8.2 (x64, MSVC 2022) via `aqtinstall` (official Qt tool).
-4. Downloads the official OBS prebuilt dependencies
-   (`obsproject/obs-deps`, latest release, `obs-deps-windows-x64` asset).
-5. Installs Inno Setup (for the installer).
-6. Configures CMake (VS2022 generator, x64, RelWithDebInfo).
+3. Installs Inno Setup (for the installer).
+4. Configures CMake (VS2022 generator, x64, RelWithDebInfo). During
+   configuration, OBS's own buildspec mechanism
+   (`cmake/windows/buildspec.cmake`) automatically downloads the exact
+   Qt 6 and obs-deps (FFmpeg, x264, AMF, ...) packages pinned for this
+   OBS version in `CMakePresets.json`, verifying each against its pinned
+   SHA-256 hash before extraction.
 7. Builds libobs, the graphics modules, the five retained plugins and the
    obs-light frontend.
 8. Runs the headless smoke test: `obs-light.exe --smoke-test` verifies that
@@ -39,9 +41,13 @@ a GitHub Release.
 | Setting | Default | Meaning |
 | ------- | ------- | ------- |
 | `env.OBS_STUDIO_VERSION` | `32.2.2` | Upstream OBS version this fork is based on (informational) |
-| `env.QT_VERSION` | `6.8.2` | Qt version installed on the runner |
 | `env.BUILD_TYPE` | `RelWithDebInfo` | CMake build configuration |
 | `OBS_VERSION_OVERRIDE` | computed | Version from the git tag (or `0.0.0-ci`) |
+
+Qt and obs-deps versions are not configured in the workflow — they come
+pinned in `CMakePresets.json` (the `dependencies` preset), which the
+buildspec mechanism reads at configure time. When merging an upstream
+update, this file brings the matching dependency versions automatically.
 
 ## Manual triggers
 
@@ -53,15 +59,9 @@ from the Actions tab with an optional version override for testing.
 If you ever want to build locally (not required):
 
 ```sh
-# 1. Install Qt 6.8.2 MSVC2022 x64 (any location)
-aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 -O D:\Qt
-
-# 2. Download obs-deps and extract to D:\obs-deps
-
-# 3. Configure and build
+# 1. Configure and build (deps are auto-downloaded by the buildspec mechanism)
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -T v143 `
   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-  -DCMAKE_PREFIX_PATH="D:\Qt\6.8.2\win64_msvc2022_64;D:\obs-deps" `
   -DENABLE_SCRIPTING=OFF `
   -DOBS_VERSION_OVERRIDE=0.1.0
 cmake --build build --config RelWithDebInfo

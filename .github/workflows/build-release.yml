@@ -25,13 +25,11 @@ on:
         type: string
 
 env:
-  # Pin OBS Studio version for the fork
+  # OBS Studio version this fork is based on (informational; dependency
+  # versions/hashes are pinned in CMakePresets.json)
   OBS_STUDIO_VERSION: 32.2.2
   # CMake build type
   BUILD_TYPE: RelWithDebInfo
-  # Qt version (install via aqtinstall)
-  QT_VERSION: "6.8.2"
-  QT_ARCH: "win64_msvc2022_64"
 
 jobs:
   build:
@@ -58,21 +56,6 @@ jobs:
           }
           Write-Host "Visual Studio ready"
 
-      - name: Install aqtinstall (Qt)
-        run: |
-          pip install aqtinstall
-          aqt install-qt windows desktop ${{ env.QT_VERSION }} ${{ env.QT_ARCH }} -O D:\Qt
-
-      - name: Download obs-deps
-        run: |
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/obsproject/obs-deps/releases/latest"
-          $asset = $release.assets | Where-Object { $_.name -match 'obs-deps-windows-x64' -and $_.name -notmatch '-src' } | Select-Object -First 1
-          if (-not $asset) { throw "obs-deps asset not found" }
-          Write-Host "Downloading $($asset.name)"
-          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "$env:TEMP\obs-deps.zip"
-          Expand-Archive -Path "$env:TEMP\obs-deps.zip" -DestinationPath "D:\obs-deps" -Force
-          Write-Host "obs-deps extracted to D:\obs-deps"
-
       - name: Install Inno Setup
         run: |
           choco install innosetup --no-progress
@@ -90,13 +73,16 @@ jobs:
           Write-Host "Version: $version"
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+      # Qt 6 and obs-deps (FFmpeg, x264, AMF, ...) are downloaded automatically
+      # by OBS's own buildspec mechanism (cmake/windows/buildspec.cmake) during
+      # CMake configuration: it fetches the exact versions and SHA256 hashes
+      # pinned in CMakePresets.json for OBS ${{ env.OBS_STUDIO_VERSION }}.
+      # No manual dependency installation is required.
       - name: Configure CMake
         run: |
           cmake -S . -B build `
             -G "Visual Studio 17 2022" -A x64 -T v143 `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DCMAKE_PREFIX_PATH="D:\Qt\${{ env.QT_VERSION }}\${{ env.QT_ARCH }};D:\obs-deps" `
-            -DQTDIR="D:\Qt\${{ env.QT_VERSION }}\${{ env.QT_ARCH }}" `
             -DENABLE_FRONTEND=ON -DENABLE_PLUGINS=ON `
             -DENABLE_SCRIPTING=OFF `
             -DENABLE_NVENC=ON -DENABLE_HEVC=ON `

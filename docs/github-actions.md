@@ -61,10 +61,12 @@ build, smoke test, and validation all pass.
 - Dependencies are installed inside the workflow; nothing is assumed to be
   preinstalled beyond what the GitHub runner image documents (the C++
   toolset is verified and installed via Chocolatey if missing).
-- Qt is installed with `aqtinstall` (the official Qt installer tool).
-- OBS dependencies come from the official `obsproject/obs-deps` GitHub
-  releases (latest, `obs-deps-windows-x64` asset), so builds use the same
-  prebuilt libraries as upstream OBS CI.
+- Qt 6 and obs-deps (FFmpeg, x264, AMF, etc.) are downloaded automatically
+  by OBS's own buildspec mechanism during CMake configuration, using the
+  exact versions and SHA-256 hashes pinned in `CMakePresets.json` for the
+  upstream OBS version this fork is based on. Downloads are verified
+  against the pinned hash before extraction; nothing is fetched from
+  unverifiable or third-party sources.
 - Inno Setup is installed via the official Chocolatey package.
 
 ## Validation
