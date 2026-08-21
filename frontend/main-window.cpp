@@ -43,8 +43,7 @@ static void DrawPreview(void *data, uint32_t cx, uint32_t cy)
 {
 	UNUSED_PARAMETER(data);
 
-	gs_viewport_t viewport = {0, 0, cx, cy, true};
-	gs_set_viewport(&viewport);
+	gs_set_viewport(0, 0, (int)cx, (int)cy);
 	obs_render_main_texture();
 }
 
@@ -57,9 +56,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 	setWindowTitle("obs-light");
 	setMinimumSize(640, 400);
 
-	captureManager = new CaptureManager(this);
-	recorder = new Recorder(this);
-	hotkeys = new Hotkeys(this);
+	captureManager = new CaptureManager;
+	recorder = new Recorder;
+	hotkeys = new Hotkeys;
 
 	BuildUI();
 	SetupTray();
@@ -129,11 +128,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 MainWindow::~MainWindow()
 {
 	hotkeys->Shutdown();
+	delete hotkeys;
 
 	if (recorder)
 		recorder->Shutdown();
+	delete recorder;
+
 	if (captureManager)
 		captureManager->Shutdown();
+	delete captureManager;
 
 	AppConfig::Save();
 	instance = nullptr;

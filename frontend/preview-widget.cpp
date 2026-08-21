@@ -37,9 +37,9 @@ PreviewWidget::PreviewWidget(QWidget *parent) : QWidget(parent)
 		if (!display) {
 			CreateDisplay();
 		} else {
-			QSize size = size();
-			obs_display_resize(display, (uint32_t)size.width(),
-					   (uint32_t)size.height());
+			QSize widgetSize = size();
+			obs_display_resize(display, (uint32_t)widgetSize.width(),
+					   (uint32_t)widgetSize.height());
 		}
 	};
 

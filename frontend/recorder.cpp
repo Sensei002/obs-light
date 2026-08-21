@@ -28,7 +28,7 @@ void Recorder::OnRecordStop(void *data, calldata_t *cd)
 	Recorder *recorder = static_cast<Recorder *>(data);
 	int code = signal_code(cd);
 	blog(LOG_INFO, "recording stopped (code %d)", code);
-	if (code != OBS_OUTPUT_SUCCESS && code != OBS_OUTPUT_STOPPED) {
+	if (code != OBS_OUTPUT_SUCCESS) {
 		const char *err = obs_output_get_last_error(recorder->recordOutput);
 		emit recorder->errorOccurred(
 			QString("Recording stopped with an error: %1")
@@ -49,7 +49,7 @@ void Recorder::OnReplayStop(void *data, calldata_t *cd)
 	Recorder *recorder = static_cast<Recorder *>(data);
 	int code = signal_code(cd);
 	blog(LOG_INFO, "replay buffer stopped (code %d)", code);
-	if (code != OBS_OUTPUT_SUCCESS && code != OBS_OUTPUT_STOPPED) {
+	if (code != OBS_OUTPUT_SUCCESS) {
 		const char *err = obs_output_get_last_error(recorder->replayOutput);
 		emit recorder->errorOccurred(
 			QString("Replay buffer stopped with an error: %1")

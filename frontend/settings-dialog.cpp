@@ -542,10 +542,10 @@ void SettingsDialog::OnCancel()
 void SettingsDialog::UpdateEncoderVisibility()
 {
 	bool isNvenc = encoder->currentData().toString() != "x264";
-	bool cqp = rateControl->currentData().toString() == "CQP";
+	bool useCqp = rateControl->currentData().toString() == "CQP";
 
-	bitrate->setVisible(isNvenc && !cqp);
-	cqp->setVisible(isNvenc && cqp);
+	bitrate->setVisible(isNvenc && !useCqp);
+	cqp->setVisible(isNvenc && useCqp);
 	preset->setVisible(isNvenc);
 }
 
