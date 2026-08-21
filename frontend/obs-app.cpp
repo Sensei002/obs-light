@@ -325,14 +325,20 @@ int OBSApp::RunSmokeTest()
 			failures++;
 	}
 
-	obs_shutdown();
-
-	if (logFile) {
-		fclose(logFile);
-		logFile = nullptr;
-	}
-
 	blog(LOG_INFO, "smoke test %s (%d failures)",
 	     failures == 0 ? "PASSED" : "FAILED", failures);
+
+	/* IMPORTANT: obs_shutdown() is intentionally NOT called here.
+	 *
+	 * win-capture spawns a background thread during module load which runs
+	 * get-graphics-offsets64.exe; that helper creates a D3D9/D3D10 device,
+	 * which never completes on GPU-less CI runners. obs_shutdown() then
+	 * blocks forever waiting for that thread in obs_module_unload.
+	 * The smoke test verifies startup and module registration only, so the
+	 * process exits directly; the hung helper dies with it and the runner
+	 * cleans up orphaned processes at job end. */
+	if (logFile)
+		fflush(logFile);
+	ExitProcess(failures == 0 ? 0 : 1);
 	return failures == 0 ? 0 : 1;
 }

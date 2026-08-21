@@ -87,6 +87,17 @@ encoder types (`obs_nvenc_h264_tex`, `obs_nvenc_h264_soft`, `obs_x264`,
 `ffmpeg_aac`) and output types (`ffmpeg_muxer`, `replay_buffer`) are
 registered.
 
+Notes on the smoke test:
+
+- The process exits directly instead of calling `obs_shutdown()`. win-capture
+  spawns a background thread at module load that runs
+  `get-graphics-offsets64.exe`, which creates a D3D9/D3D10 device; that never
+  completes on GPU-less CI runners and would block module unload forever.
+  Startup and module registration are what the smoke test verifies; the
+  runner cleans up orphaned processes after the job.
+- The smoke test step has a 10-minute timeout and the full job a 2-hour
+  timeout, so a regression can never hang CI indefinitely.
+
 ## Limitations
 
 GitHub-hosted runners have no GPU, so encoding, capture and GUI behavior

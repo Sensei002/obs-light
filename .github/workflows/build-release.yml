@@ -35,6 +35,7 @@ jobs:
   build:
     name: Windows x64
     runs-on: windows-2022
+    timeout-minutes: 120
     defaults:
       run:
         shell: pwsh
@@ -96,6 +97,7 @@ jobs:
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run smoke test
+        timeout-minutes: 10
         run: |
           $exe = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit\obs-light.exe"
           if (-not (Test-Path $exe)) { throw "obs-light.exe not found" }
@@ -106,6 +108,18 @@ jobs:
           Write-Host "Smoke test exit code: $($p.ExitCode)"
           if ($p.ExitCode -ne 0) { throw "Smoke test failed (exit code $($p.ExitCode))" }
           Write-Host "Smoke test passed"
+
+      - name: Print smoke test log
+        if: always()
+        run: |
+          $log = Get-ChildItem "$env:APPDATA\obs-light\logs\obs-light-*.log" -ErrorAction SilentlyContinue |
+                 Sort-Object LastWriteTime | Select-Object -Last 1
+          if ($log) {
+            Write-Host "=== obs-light log: $($log.Name) ==="
+            Get-Content $log.FullName
+          } else {
+            Write-Host "No obs-light log file found"
+          }
 
       - name: Validate artifacts
         shell: pwsh
