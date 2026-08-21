@@ -119,7 +119,10 @@ jobs:
           Write-Host "Running smoke test..."
           # GUI-subsystem executables are not waited on by PowerShell when
           # invoked with &, so use Start-Process to get the real exit code.
-          $p = Start-Process -FilePath $exe -ArgumentList "--smoke-test" -Wait -PassThru
+          # The working directory is set to the exe folder: libobs resolves
+          # its module paths relative to the process working directory.
+          $p = Start-Process -FilePath $exe -ArgumentList "--smoke-test" `
+            -WorkingDirectory (Split-Path $exe) -Wait -PassThru
           Write-Host "Smoke test exit code: $($p.ExitCode)"
           if ($p.ExitCode -ne 0) { throw "Smoke test failed (exit code $($p.ExitCode))" }
           Write-Host "Smoke test passed"

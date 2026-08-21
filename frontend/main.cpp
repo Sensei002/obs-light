@@ -26,8 +26,28 @@ static bool HasArg(int argc, char *argv[], const char *arg)
 	return false;
 }
 
+/* libobs resolves its default module paths (../../obs-plugins/64bit) and
+ * plugin data paths relative to the process working directory.  Anchor the
+ * working directory to the executable's folder so obs-light finds its
+ * plugins no matter how it is launched (Explorer, shortcuts, shell, CI). */
+static void SetWorkingDirectoryToExe()
+{
+	wchar_t path[MAX_PATH];
+	if (!GetModuleFileNameW(NULL, path, MAX_PATH))
+		return;
+
+	wchar_t *slash = wcsrchr(path, L'\\');
+	if (!slash)
+		return;
+	*slash = 0;
+
+	SetCurrentDirectoryW(path);
+}
+
 int main(int argc, char *argv[])
 {
+	SetWorkingDirectoryToExe();
+
 	if (HasArg(argc, argv, "--version")) {
 		AttachConsole(ATTACH_PARENT_PROCESS);
 		printf("obs-light %s\n", obs_get_version_string());
