@@ -46,7 +46,7 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 [Files]
 ; Executable and all runtime files: Qt DLLs and plugin folders (platforms/,
 ; styles/, ...), obs.dll, libobs-d3d11.dll, ffmpeg-mux, ...
-Source: "..\build\rundir\{#ConfigName}\bin\64bit\*"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\rundir\{#ConfigName}\bin\64bit\*"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"
 
 ; Plugins
 Source: "..\build\rundir\{#ConfigName}\obs-plugins\64bit\*.dll"; DestDir: "{app}\obs-plugins\64bit"; Flags: ignoreversion skipifsourcedoesntexist

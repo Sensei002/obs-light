@@ -13,6 +13,10 @@
 
 name: Build and Release
 
+# The GitHub Release step needs write access to repository contents.
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
