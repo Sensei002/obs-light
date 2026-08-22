@@ -1,8 +1,8 @@
-# obs-light
+﻿# obs-lite
 
 **Lightweight Windows game recording and instant replay.**
 
-obs-light is a stripped-down, Windows-focused fork of [OBS Studio](https://obsproject.com)
+obs-lite is a stripped-down, Windows-focused fork of [OBS Studio](https://obsproject.com)
 designed for one purpose: low-overhead local game recording with a replay
 buffer. It is **not** a streaming application.
 
@@ -18,7 +18,7 @@ buffer. It is **not** a streaming application.
 - Preview that can be disabled (recording continues)
 - No streaming, no telemetry, no account, no cloud, works fully offline
 
-obs-light keeps the mature low-level OBS multimedia code (libobs, win-capture,
+obs-lite keeps the mature low-level OBS multimedia code (libobs, win-capture,
 obs-ffmpeg, obs-nvenc) and removes everything unrelated to recording:
 streaming outputs/services, browser source, websocket server, virtual camera,
 studio mode, scene collections, scripting, and the full OBS frontend are all
@@ -33,18 +33,18 @@ gone. The UI is a single compact window with exactly one scene.
 
 ## Installation
 
-Download `obs-light-Setup-x64.exe` from the
-[Releases](https://github.com/obs-light/obs-light/releases) page and run it.
-A portable `obs-light-x64.zip` is also available.
+Download `obs-lite-Setup-x64.exe` from the
+[Releases](https://github.com/obs-lite/obs-lite/releases) page and run it.
+A portable `obs-lite-x64.zip` is also available.
 
 ## Usage
 
-1. Start obs-light. The preview shows the capture source.
+1. Start obs-lite. The preview shows the capture source.
 2. Pick the video source: **Game Capture** (any fullscreen game, or a
    specific window) or **Display Capture**.
 3. Pick the application whose audio should be recorded under **App Audio**.
 4. Click **Start Recording** or **Start Replay Buffer** (or use hotkeys).
-5. Click **Save Replay** to keep the last N seconds — saving is asynchronous
+5. Click **Save Replay** to keep the last N seconds â€” saving is asynchronous
    and never pauses the game.
 
 ### Default hotkeys
@@ -57,13 +57,13 @@ A portable `obs-light-x64.zip` is also available.
 | Start Replay Buffer   | Ctrl + Alt + F11   |
 | Stop Replay Buffer    | Ctrl + Alt + Shift + F11 |
 
-All hotkeys are configurable in Settings → Hotkeys.
+All hotkeys are configurable in Settings â†’ Hotkeys.
 
 ### Replay buffer
 
 The replay buffer holds encoded packets in memory (no re-encoding on save),
 bounded by duration and a maximum size in MB. Saving copies the relevant
-packet range and muxes it on a separate thread — gameplay and recording are
+packet range and muxes it on a separate thread â€” gameplay and recording are
 not interrupted.
 
 ## Defaults
@@ -72,13 +72,13 @@ not interrupted.
 - Encoder: NVENC H.264 (auto-detected; falls back to x264)
 - Rate control: CBR 8000 Kbps (CQP mode available)
 - Replay: enabled, 60 s, MP4
-- Recordings: `%APPDATA%\obs-light\recordings\Recording_YYYY-MM-DD_HH-MM-SS.mkv`
-- Replays: `%APPDATA%\obs-light\replays\Replay_YYYY-MM-DD_HH-MM-SS.mp4`
-- Config/logs: `%APPDATA%\obs-light\`
+- Recordings: `%APPDATA%\obs-lite\recordings\Recording_YYYY-MM-DD_HH-MM-SS.mkv`
+- Replays: `%APPDATA%\obs-lite\replays\Replay_YYYY-MM-DD_HH-MM-SS.mp4`
+- Config/logs: `%APPDATA%\obs-lite\`
 
 ## Building
 
-The project is built entirely through GitHub Actions — there is no manual
+The project is built entirely through GitHub Actions â€” there is no manual
 build required:
 
 1. Push commits to `main`. CI builds, runs the smoke test, validates
@@ -91,7 +91,7 @@ build required:
    ```
 
    CI builds, validates, packages, builds the installer, and creates a
-   GitHub Release with `obs-light-Setup-x64.exe`, `obs-light-x64.zip` and
+   GitHub Release with `obs-lite-Setup-x64.exe`, `obs-lite-x64.zip` and
    `SHA256SUMS.txt`.
 
 See [docs/building.md](docs/building.md) and
@@ -100,29 +100,29 @@ See [docs/building.md](docs/building.md) and
 ## Project layout
 
 ```
-obs-light/
-├── .github/workflows/build-release.yml  # the single CI/CD workflow
-├── cmake/                               # OBS CMake infrastructure (upstream)
-├── deps/                                # bundled OBS dependencies (upstream)
-├── docs/                                # obs-light documentation
-├── frontend/                            # obs-light custom Qt frontend
-├── installer/obs-light.iss              # Inno Setup installer
-├── libobs/                              # OBS core library (upstream)
-├── libobs-d3d11/ libobs-opengl/ libobs-winrt/   # graphics modules (upstream)
-├── plugins/
-│   ├── obs-ffmpeg/                      # muxing + replay buffer (upstream)
-│   ├── obs-nvenc/                       # NVENC encoders (upstream)
-│   ├── obs-x264/                        # software fallback (upstream)
-│   ├── win-capture/                     # game/display capture (upstream)
-│   └── win-wasapi/                      # application audio (upstream)
-├── scripts/                             # CI validation scripts
-├── COPYING                              # GPL-2.0 license text (upstream)
-└── THIRD_PARTY_NOTICES.md
+obs-lite/
+â”œâ”€â”€ .github/workflows/build-release.yml  # the single CI/CD workflow
+â”œâ”€â”€ cmake/                               # OBS CMake infrastructure (upstream)
+â”œâ”€â”€ deps/                                # bundled OBS dependencies (upstream)
+â”œâ”€â”€ docs/                                # obs-lite documentation
+â”œâ”€â”€ frontend/                            # obs-lite custom Qt frontend
+â”œâ”€â”€ installer/obs-lite.iss              # Inno Setup installer
+â”œâ”€â”€ libobs/                              # OBS core library (upstream)
+â”œâ”€â”€ libobs-d3d11/ libobs-opengl/ libobs-winrt/   # graphics modules (upstream)
+â”œâ”€â”€ plugins/
+â”‚   â”œâ”€â”€ obs-ffmpeg/                      # muxing + replay buffer (upstream)
+â”‚   â”œâ”€â”€ obs-nvenc/                       # NVENC encoders (upstream)
+â”‚   â”œâ”€â”€ obs-x264/                        # software fallback (upstream)
+â”‚   â”œâ”€â”€ win-capture/                     # game/display capture (upstream)
+â”‚   â””â”€â”€ win-wasapi/                      # application audio (upstream)
+â”œâ”€â”€ scripts/                             # CI validation scripts
+â”œâ”€â”€ COPYING                              # GPL-2.0 license text (upstream)
+â””â”€â”€ THIRD_PARTY_NOTICES.md
 ```
 
 ## Licensing
 
-obs-light is a fork of OBS Studio and is distributed under the
+obs-lite is a fork of OBS Studio and is distributed under the
 [GNU General Public License v2.0](COPYING) (GPL-2.0), as required by the
 upstream project. All upstream copyright notices and third-party license
 attributions are preserved; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
@@ -131,7 +131,7 @@ and [docs/licensing.md](docs/licensing.md).
 ## Known limitations
 
 - No streaming, browser source, virtual camera, scripting, or websocket
-  server — by design.
+  server â€” by design.
 - Preview rendering requires a Direct3D 11 capable GPU.
 - GitHub-hosted CI cannot exercise GPU encoding or GUI interactions; the CI
   smoke test verifies plugin/module loading only. Physical-hardware testing

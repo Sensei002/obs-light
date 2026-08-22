@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 
@@ -35,7 +35,7 @@ private:
 	bool capturing = false;
 };
 
-/* Settings dialog for obs-light.
+/* Settings dialog for obs-lite.
  *
  * General tab: recording dir, replay dir, start with Windows, minimize to
  * tray, start minimized, show preview by default.
@@ -68,6 +68,7 @@ private:
 	/* General */
 	QLineEdit *recordingDir = nullptr;
 	QLineEdit *replayDir = nullptr;
+	QComboBox *recordingFormat = nullptr;
 	QCheckBox *startWithWindows = nullptr;
 	QCheckBox *minimizeToTray = nullptr;
 	QCheckBox *startMinimized = nullptr;

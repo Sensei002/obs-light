@@ -1,4 +1,4 @@
-# Single obs-light CI/CD workflow.
+﻿# Single obs-lite CI/CD workflow.
 #
 # Normal CI builds (push to main):
 #   Checkout, install deps, configure, build, package, upload build artifacts.
@@ -118,8 +118,8 @@ jobs:
       - name: Run smoke test
         timeout-minutes: 10
         run: |
-          $exe = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit\obs-light.exe"
-          if (-not (Test-Path $exe)) { throw "obs-light.exe not found" }
+          $exe = "build\rundir\${{ env.BUILD_TYPE }}\bin\64bit\obs-lite.exe"
+          if (-not (Test-Path $exe)) { throw "obs-lite.exe not found" }
           Write-Host "Running smoke test..."
           # GUI-subsystem executables are not waited on by PowerShell when
           # invoked with &, so use Start-Process to get the real exit code.
@@ -134,13 +134,13 @@ jobs:
       - name: Print smoke test log
         if: always()
         run: |
-          $log = Get-ChildItem "$env:APPDATA\obs-light\logs\obs-light-*.log" -ErrorAction SilentlyContinue |
+          $log = Get-ChildItem "$env:APPDATA\obs-lite\logs\obs-lite-*.log" -ErrorAction SilentlyContinue |
                  Sort-Object LastWriteTime | Select-Object -Last 1
           if ($log) {
-            Write-Host "=== obs-light log: $($log.Name) ==="
+            Write-Host "=== obs-lite log: $($log.Name) ==="
             Get-Content $log.FullName
           } else {
-            Write-Host "No obs-light log file found"
+            Write-Host "No obs-lite log file found"
           }
 
       - name: Validate artifacts
@@ -153,7 +153,7 @@ jobs:
       - name: Upload build artifacts (CI)
         uses: actions/upload-artifact@v4
         with:
-          name: obs-light-${{ env.BUILD_TYPE }}-${{ github.sha }}
+          name: obs-lite-${{ env.BUILD_TYPE }}-${{ github.sha }}
           path: build\rundir\${{ env.BUILD_TYPE }}\
           retention-days: 30
 
@@ -162,9 +162,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          & $iscc /DMyAppVersion="${{ steps.version.outputs.version }}" /DConfigName="${{ env.BUILD_TYPE }}" installer\obs-light.iss
+          & $iscc /DMyAppVersion="${{ steps.version.outputs.version }}" /DConfigName="${{ env.BUILD_TYPE }}" installer\obs-lite.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed (exit $LASTEXITCODE)" }
-          if (-not (Test-Path "build\installer\obs-light-Setup-x64.exe")) {
+          if (-not (Test-Path "build\installer\obs-lite-Setup-x64.exe")) {
             throw "Installer build failed"
           }
           Write-Host "Installer built"
@@ -172,7 +172,7 @@ jobs:
       - name: Create portable ZIP
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          Compress-Archive -Path "build\rundir\${{ env.BUILD_TYPE }}\*" -DestinationPath "build\obs-light-x64.zip" -Force
+          Compress-Archive -Path "build\rundir\${{ env.BUILD_TYPE }}\*" -DestinationPath "build\obs-lite-x64.zip" -Force
 
       - name: Generate SHA256SUMS
         if: startsWith(github.ref, 'refs/tags/v')
@@ -180,7 +180,7 @@ jobs:
           Get-ChildItem -Path build\installer -Filter "*.exe" | Get-FileHash -Algorithm SHA256 | ForEach-Object {
             "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)"
           } | Out-File -FilePath build\SHA256SUMS.txt -Encoding ascii
-          Get-ChildItem -Path build -Filter "obs-light-x64.zip" | Get-FileHash -Algorithm SHA256 | ForEach-Object {
+          Get-ChildItem -Path build -Filter "obs-lite-x64.zip" | Get-FileHash -Algorithm SHA256 | ForEach-Object {
             "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)"
           } | Out-File -FilePath build\SHA256SUMS.txt -Encoding ascii -Append
           Write-Host "SHA256SUMS:"
@@ -190,9 +190,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          name: obs-light ${{ steps.version.outputs.version }}
+          name: obs-lite ${{ steps.version.outputs.version }}
           body: |
-            ## obs-light ${{ github.ref_name }}
+            ## obs-lite ${{ github.ref_name }}
 
             **Lightweight Windows game recording and instant replay.**
 
@@ -202,7 +202,7 @@ jobs:
             - See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}) for details.
 
             ### Installation
-            Download the installer (obs-light-Setup-x64.exe) and run it.
+            Download the installer (obs-lite-Setup-x64.exe) and run it.
             A portable ZIP is also available.
 
             ### System requirements
@@ -214,7 +214,7 @@ jobs:
             - GPU-accelerated preview requires a Direct3D 11 compatible GPU
             - Smoke tests pass on CI; full GUI/recording tests require physical hardware
           files: |
-            build\installer\obs-light-Setup-x64.exe
-            build\obs-light-x64.zip
+            build\installer\obs-lite-Setup-x64.exe
+            build\obs-lite-x64.zip
             build\SHA256SUMS.txt
           fail_on_unmatched_files: true

@@ -1,4 +1,4 @@
-#include "settings-dialog.hpp"
+﻿#include "settings-dialog.hpp"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -184,7 +184,7 @@ void HotkeyCaptureButton::UpdateText()
 
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent)
 {
-	setWindowTitle("obs-light Settings");
+	setWindowTitle("obs-lite Settings");
 	BuildUI();
 	LoadSettings();
 }
@@ -214,7 +214,12 @@ void SettingsDialog::BuildUI()
 	replayRow->addWidget(replayBrowse);
 	generalLayout->addRow("Replay directory:", replayRow);
 
-	startWithWindows = new QCheckBox("Start obs-light with Windows", generalTab);
+	recordingFormat = new QComboBox(generalTab);
+	recordingFormat->addItem("MKV (recommended)", "mkv");
+	recordingFormat->addItem("MP4", "mp4");
+	generalLayout->addRow("Recording format:", recordingFormat);
+
+	startWithWindows = new QCheckBox("Start obs-lite with Windows", generalTab);
 	generalLayout->addRow("", startWithWindows);
 	minimizeToTray = new QCheckBox("Minimize to system tray instead of closing",
 				     generalTab);
@@ -254,9 +259,10 @@ void SettingsDialog::BuildUI()
 		outputRes->addItem(res.name);
 	videoLayout->addRow("Output resolution:", outputRes);
 
-	fps = new QComboBox(videoTab);
+fps = new QComboBox(videoTab);
 	fps->addItem("30 FPS", 30);
 	fps->addItem("60 FPS", 60);
+	fps->addItem("100 FPS", 100);
 	fps->addItem("120 FPS", 120);
 	videoLayout->addRow("FPS:", fps);
 
@@ -398,6 +404,11 @@ void SettingsDialog::LoadSettings()
 	recordingDir->setText(
 		QString::fromStdString(AppConfig::GetRecordingDir()));
 	replayDir->setText(QString::fromStdString(AppConfig::GetReplayDir()));
+
+	std::string format = AppConfig::RecordingFormat();
+	int formatIdx = format == "mp4" ? 1 : 0;
+	recordingFormat->setCurrentIndex(formatIdx < 0 ? 0 : formatIdx);
+
 	startWithWindows->setChecked(AppConfig::StartWithWindows());
 	minimizeToTray->setChecked(AppConfig::MinimizeToTray());
 	startMinimized->setChecked(AppConfig::StartMinimized());
@@ -464,6 +475,8 @@ void SettingsDialog::SaveSettings()
 			    recordingDir->text().toUtf8().constData());
 	obs_data_set_string(config, "Replay.ReplayDir",
 			    replayDir->text().toUtf8().constData());
+	obs_data_set_string(config, "General.RecordingFormat",
+			    recordingFormat->currentData().toString().toUtf8().constData());
 	obs_data_set_bool(config, "General.StartWithWindows",
 			  startWithWindows->isChecked());
 	obs_data_set_bool(config, "General.MinimizeToTray",

@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <vector>
 
 #include <obs.h>
 
-/* Manages the single obs-light scene and the three supported source types:
+/* Manages the single obs-lite scene and the three supported source types:
  * game capture, display capture and application audio capture.
  *
  * Exactly one scene exists and is attached to the main canvas channel 0.

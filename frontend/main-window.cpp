@@ -1,4 +1,4 @@
-#include "main-window.hpp"
+﻿#include "main-window.hpp"
 
 #include <cmath>
 #include <cstring>
@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
 	instance = this;
 
-	setWindowTitle("obs-light");
+	setWindowTitle("obs-lite");
 	setMinimumSize(640, 400);
 
 	captureManager = new CaptureManager;
@@ -276,9 +276,9 @@ void MainWindow::BuildUI()
 
 void MainWindow::SetupTray()
 {
-	QIcon icon = QIcon(":/obs-light.png");
+	QIcon icon = QIcon(":/obs-lite.png");
 	trayIcon = new QSystemTrayIcon(icon, this);
-	trayIcon->setToolTip("obs-light");
+	trayIcon->setToolTip("obs-lite");
 
 	auto *menu = new QMenu(this);
 	menu->addAction("Start Recording", this, &MainWindow::OnStartRecording);
@@ -290,7 +290,7 @@ void MainWindow::SetupTray()
 			&MainWindow::OnStopReplayBuffer);
 	menu->addAction("Save Replay", this, &MainWindow::OnSaveReplay);
 	menu->addSeparator();
-	menu->addAction("Show obs-light", this, [this]() {
+	menu->addAction("Show obs-lite", this, [this]() {
 		showNormal();
 		raise();
 		activateWindow();
@@ -396,13 +396,13 @@ void MainWindow::UpdateStatus()
 	QString status;
 
 	if (recordingActive && replayActive) {
-		status = "● RECORDING + REPLAY BUFFERING";
+		status = "â— RECORDING + REPLAY BUFFERING";
 	} else if (recordingActive) {
-		status = "● RECORDING";
+		status = "â— RECORDING";
 	} else if (replayActive) {
-		status = "● REPLAY BUFFERING";
+		status = "â— REPLAY BUFFERING";
 	} else {
-		status = "● READY";
+		status = "â— READY";
 	}
 
 	status += QString("   |   Replay: %1 sec")
@@ -597,13 +597,13 @@ void MainWindow::OnOutputSignal(const char *signal, obs_output_t *output)
 
 void MainWindow::ShowError(const QString &message)
 {
-	QMessageBox::critical(Instance(), "obs-light", message);
+	QMessageBox::critical(Instance(), "obs-lite", message);
 	blog(LOG_ERROR, "%s", message.toUtf8().constData());
 }
 
 void MainWindow::ShowInfo(const QString &message)
 {
-	QMessageBox::information(Instance(), "obs-light", message);
+	QMessageBox::information(Instance(), "obs-lite", message);
 }
 
 bool MainWindow::nativeEvent(const QByteArray &, void *message, qintptr *)
@@ -641,6 +641,12 @@ void MainWindow::changeEvent(QEvent *event)
 			/* Stop preview rendering while minimized to reduce
 			 * GPU work; recording/replay continue normally. */
 			previewEnabled = false;
+			UpdatePreview();
+		} else {
+			/* Restore the preview when the window is restored
+			 * from minimize (the user's preference is checked in
+			 * OnSettingsApplied / startup). */
+			previewEnabled = AppConfig::StartWithPreview();
 			UpdatePreview();
 		}
 	}

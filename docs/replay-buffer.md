@@ -1,10 +1,10 @@
-# Replay Buffer
+﻿# Replay Buffer
 
-The replay buffer is a first-class feature of obs-light.
+The replay buffer is a first-class feature of obs-lite.
 
 ## How it works
 
-obs-light uses the upstream OBS `replay_buffer` output (implemented in
+obs-lite uses the upstream OBS `replay_buffer` output (implemented in
 `plugins/obs-ffmpeg/obs-ffmpeg-mux.c`). It works at the **encoded packet**
 level:
 
@@ -25,8 +25,8 @@ capture pipeline keeps running while the file is written.
 ## Memory usage
 
 The ring is bounded by `max_time_sec` and `max_size_mb`. Estimated memory is
-roughly the average bitrate × duration; for example at 8 Mbps for 60 s the
-video ring holds ≈ 60 MB plus audio. The hard `max_size_mb` cap guarantees
+roughly the average bitrate Ã— duration; for example at 8 Mbps for 60 s the
+video ring holds â‰ˆ 60 MB plus audio. The hard `max_size_mb` cap guarantees
 the buffer cannot grow without bound.
 
 ## API surface used by the frontend
@@ -35,15 +35,15 @@ the buffer cannot grow without bound.
 - Settings:
   - `max_time_sec` (int)
   - `max_size_mb` (int)
-  - `directory` (string) — where replay files are written
-  - `format` (string) — filename format, default
+  - `directory` (string) â€” where replay files are written
+  - `format` (string) â€” filename format, default
     `Replay_%CCYY-%MM-%DD_%hh-%mm-%ss`
-  - `extension` (string) — `mp4` (default) or `mkv`
-  - `allow_spaces` (bool) — false for obs-light (safe filenames)
-- Save trigger: `proc_handler_call(ph, "save", nullptr)` — the plugin sets a
+  - `extension` (string) â€” `mp4` (default) or `mkv`
+  - `allow_spaces` (bool) â€” false for obs-lite (safe filenames)
+- Save trigger: `proc_handler_call(ph, "save", nullptr)` â€” the plugin sets a
   save timestamp and performs the packet copy + mux on its next packet, on
   the mux thread.
-- Completion signal: `saved` — the frontend uses it to update state and
+- Completion signal: `saved` â€” the frontend uses it to update state and
   re-arm the "Save Replay" button.
 - Encoders: the replay buffer owns its own video/audio encoder instances
   (same settings as recording), so recording and replay buffering can run

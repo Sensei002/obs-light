@@ -1,4 +1,4 @@
-#include "app-config.hpp"
+﻿#include "app-config.hpp"
 
 #include <Windows.h>
 #include <shlobj.h>
@@ -20,9 +20,9 @@ static std::string GetAppDataDir()
 	wchar_t path[MAX_PATH];
 	if (SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path) == S_OK) {
 		std::wstring wpath(path);
-		return std::string(wpath.begin(), wpath.end()) + "\\obs-light";
+		return std::string(wpath.begin(), wpath.end()) + "\\obs-lite";
 	}
-	return std::string("obs-light");
+	return std::string("obs-lite");
 }
 
 static void EnsureDirs()
@@ -129,6 +129,12 @@ std::string GetReplayDir()
 	return obs_data_get_string(config, "Replay.ReplayDir");
 }
 
+std::string RecordingFormat()
+{
+	const char *format = obs_data_get_string(config, "General.RecordingFormat");
+	return (format && *format) ? format : "mkv";
+}
+
 bool StartWithWindows()
 {
 	return obs_data_get_bool(config, "General.StartWithWindows");
@@ -147,10 +153,10 @@ void SetStartWithWindows(bool enabled)
 			  &key) == ERROR_SUCCESS) {
 		if (enabled) {
 			std::wstring cmd = L"\"" + std::wstring(exePath) + L"\" -minimized";
-			RegSetValueExW(key, L"obs-light", 0, REG_SZ, (const BYTE *)cmd.c_str(),
+			RegSetValueExW(key, L"obs-lite", 0, REG_SZ, (const BYTE *)cmd.c_str(),
 				       (DWORD)((cmd.size() + 1) * sizeof(wchar_t)));
 		} else {
-			RegDeleteValueW(key, L"obs-light");
+			RegDeleteValueW(key, L"obs-lite");
 		}
 		RegCloseKey(key);
 	}

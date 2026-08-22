@@ -13,9 +13,9 @@
 #include "obs-app.hpp"
 
 /* CLI handling:
- *   obs-light.exe --version     -> print version and exit
- *   obs-light.exe --smoke-test  -> headless plugin/module verification (CI)
- *   obs-light.exe -minimized    -> start minimized to tray (shell startup) */
+ *   obs-lite.exe --version     -> print version and exit
+ *   obs-lite.exe --smoke-test  -> headless plugin/module verification (CI)
+ *   obs-lite.exe -minimized    -> start minimized to tray (shell startup) */
 
 static bool HasArg(int argc, char *argv[], const char *arg)
 {
@@ -28,7 +28,7 @@ static bool HasArg(int argc, char *argv[], const char *arg)
 
 /* libobs resolves its default module paths (../../obs-plugins/64bit) and
  * plugin data paths relative to the process working directory.  Anchor the
- * working directory to the executable's folder so obs-light finds its
+ * working directory to the executable's folder so obs-lite finds its
  * plugins no matter how it is launched (Explorer, shortcuts, shell, CI). */
 static void SetWorkingDirectoryToExe()
 {
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
 	if (HasArg(argc, argv, "--version")) {
 		AttachConsole(ATTACH_PARENT_PROCESS);
-		printf("obs-light %s\n", obs_get_version_string());
+		printf("obs-lite %s\n", obs_get_version_string());
 		return 0;
 	}
 
@@ -61,18 +61,18 @@ int main(int argc, char *argv[])
 	}
 
 	QApplication app(argc, argv);
-	app.setApplicationName("obs-light");
-	app.setApplicationDisplayName("obs-light");
-	app.setOrganizationName("obs-light");
+	app.setApplicationName("obs-lite");
+	app.setApplicationDisplayName("obs-lite");
+	app.setOrganizationName("obs-lite");
 	app.setQuitOnLastWindowClosed(false);
 
-	QIcon appIcon(":/obs-light.png");
+	QIcon appIcon(":/obs-lite.png");
 	app.setWindowIcon(appIcon);
 
 	OBSApp obsApp;
 	if (!obsApp.Initialize()) {
-		fprintf(stderr, "obs-light failed to initialize. See the log file "
-				"in %%APPDATA%%\\obs-light\\logs\\\n");
+		fprintf(stderr, "obs-lite failed to initialize. See the log file "
+				"in %%APPDATA%%\\obs-lite\\logs\\\n");
 		return 1;
 	}
 

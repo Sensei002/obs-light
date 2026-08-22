@@ -1,29 +1,29 @@
-# GitHub Actions CI/CD
+﻿# GitHub Actions CI/CD
 
-obs-light uses **one** primary workflow: `.github/workflows/build-release.yml`.
-There is no separate build workflow and no separate release workflow — the
+obs-lite uses **one** primary workflow: `.github/workflows/build-release.yml`.
+There is no separate build workflow and no separate release workflow â€” the
 single file handles both, mirroring the pipeline required by the project
 specification:
 
 ```
 Developer
-   │  git commit / git push
-   ▼
+   â”‚  git commit / git push
+   â–¼
 GitHub Repository
-   │
-   ▼
+   â”‚
+   â–¼
 GitHub Actions (windows-2022)
-   ├── Checkout
-   ├── Install dependencies (VS toolset, Qt 6.8.2, obs-deps, Inno Setup)
-   ├── Configure CMake
-   ├── Build obs-light (libobs + plugins + frontend)
-   ├── Run smoke test (headless module/type verification)
-   ├── Validate binaries (x64, version, required DLLs/plugins)
-   ├── Upload build artifacts
-   ├── [tag v* only] Build installer (Inno Setup)
-   ├── [tag v* only] Package portable ZIP
-   ├── [tag v* only] Generate SHA256SUMS.txt
-   └── [tag v* only] Create GitHub Release (installer, ZIP, checksums)
+   â”œâ”€â”€ Checkout
+   â”œâ”€â”€ Install dependencies (VS toolset, Qt 6.8.2, obs-deps, Inno Setup)
+   â”œâ”€â”€ Configure CMake
+   â”œâ”€â”€ Build obs-lite (libobs + plugins + frontend)
+   â”œâ”€â”€ Run smoke test (headless module/type verification)
+   â”œâ”€â”€ Validate binaries (x64, version, required DLLs/plugins)
+   â”œâ”€â”€ Upload build artifacts
+   â”œâ”€â”€ [tag v* only] Build installer (Inno Setup)
+   â”œâ”€â”€ [tag v* only] Package portable ZIP
+   â”œâ”€â”€ [tag v* only] Generate SHA256SUMS.txt
+   â””â”€â”€ [tag v* only] Create GitHub Release (installer, ZIP, checksums)
 ```
 
 ## Triggers
@@ -43,14 +43,14 @@ GitHub Actions (windows-2022)
    git push origin v0.1.0
    ```
 
-2. The workflow derives the version from the tag (`v0.1.0` → `0.1.0`), which
+2. The workflow derives the version from the tag (`v0.1.0` â†’ `0.1.0`), which
    is passed to CMake as `OBS_VERSION_OVERRIDE` and to the installer script.
    The version is not hardcoded anywhere else.
 
-3. If every step succeeds, a GitHub Release named `obs-light 0.1.0` is
+3. If every step succeeds, a GitHub Release named `obs-lite 0.1.0` is
    created with:
-   - `obs-light-Setup-x64.exe` (Inno Setup installer)
-   - `obs-light-x64.zip` (portable build)
+   - `obs-lite-Setup-x64.exe` (Inno Setup installer)
+   - `obs-lite-x64.zip` (portable build)
    - `SHA256SUMS.txt` (SHA-256 checksums)
 
 A failing build never publishes a release: the release step only runs after
@@ -73,14 +73,14 @@ build, smoke test, and validation all pass.
 
 `scripts/validate.ps1` checks, before anything is packaged or published:
 
-- `obs-light.exe` exists in the rundir
+- `obs-lite.exe` exists in the rundir
 - the executable is x64 (PE machine header)
 - the executable version matches the git tag (for tag builds)
 - required core DLLs and all five plugin DLLs exist
 - the win-capture graphics-hook executables and data directory are present
 - SHA256 checksums are generated
 
-The headless smoke test (`obs-light.exe --smoke-test`) additionally verifies
+The headless smoke test (`obs-lite.exe --smoke-test`) additionally verifies
 that libobs starts, all modules load, and the required source types
 (`game_capture`, `monitor_capture`, `wasapi_process_output_capture`),
 encoder types (`obs_x264`, `ffmpeg_aac`) and output types (`ffmpeg_muxer`,
@@ -104,5 +104,5 @@ Notes on the smoke test:
 
 GitHub-hosted runners have no GPU, so encoding, capture and GUI behavior
 cannot be exercised in CI. Hardware-specific validation (NVENC sessions,
-HAGS behavior, frame pacing) must be done on physical hardware — see
+HAGS behavior, frame pacing) must be done on physical hardware â€” see
 [docs/performance.md](performance.md).

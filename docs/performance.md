@@ -1,6 +1,6 @@
-# Performance
+﻿# Performance
 
-obs-light's primary purpose is low-overhead game recording with a replay
+obs-lite's primary purpose is low-overhead game recording with a replay
 buffer on modest hardware. This document describes the performance model,
 the benchmark methodology, and the honest status of measurements.
 
@@ -9,14 +9,14 @@ the benchmark methodology, and the honest status of measurements.
 The pipeline is deliberately short:
 
 ```
-Game ─► capture source ─► scene (canvas) ─► [NVENC texture encode] ─► replay/recording
-                        └─────────────────► preview (optional)
+Game â”€â–º capture source â”€â–º scene (canvas) â”€â–º [NVENC texture encode] â”€â–º replay/recording
+                        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º preview (optional)
 ```
 
 - One scene, no transitions, no filters, no composition passes beyond the
   single canvas render.
 - The default NVENC path (`obs_nvenc_h264_tex`) encodes GPU-resident
-  textures: no GPU→CPU readback, no CPU-side pixel processing.
+  textures: no GPUâ†’CPU readback, no CPU-side pixel processing.
 - The preview is a second presentation of the same canvas output; it can be
   disabled and is automatically stopped when the window is minimized.
 - The replay buffer stores encoded packets (bounded by time and MB), so
@@ -35,11 +35,11 @@ The baseline machine this project optimizes for:
 
 This is an entry-level recording setup; the GTX 950's NVENC block handles
 1080p60 H.264 comfortably, and the i5-4460 provides no headroom for heavy
-software encoding — which is why NVENC is the default.
+software encoding â€” which is why NVENC is the default.
 
 ## Benchmark methodology
 
-Comparison: **OBS Studio 32.2.2** vs **obs-light** on the same machine,
+Comparison: **OBS Studio 32.2.2** vs **obs-lite** on the same machine,
 same session, same scene content.
 
 Test procedure:
@@ -80,7 +80,7 @@ quantify the difference.
 
 Hardware-specific benchmarks require physical hardware and are not simulated
 by CI. Until a benchmark suite is run on the target machine and the numbers
-are recorded here, obs-light makes no claim of being faster than OBS Studio
+are recorded here, obs-lite makes no claim of being faster than OBS Studio
 in any specific metric.
 
 What CI does verify (on every build):
@@ -91,7 +91,7 @@ What CI does verify (on every build):
 
 ## Known resource footprint facts (architecture-level, not benchmarks)
 
-- obs-light loads 5 plugin DLLs instead of OBS Studio's ~25, so startup and
+- obs-lite loads 5 plugin DLLs instead of OBS Studio's ~25, so startup and
   idle footprint are structurally smaller.
 - No streaming infrastructure exists: no RTMP/SRT/WebRTC services, no
   service authentication, no browser/CEF processes, no websocket server, no

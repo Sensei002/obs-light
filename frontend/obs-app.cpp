@@ -55,9 +55,9 @@ static std::string GetAppDataDir()
 	wchar_t path[MAX_PATH];
 	if (SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path) == S_OK) {
 		std::wstring wpath(path);
-		return std::string(wpath.begin(), wpath.end()) + "\\obs-light";
+		return std::string(wpath.begin(), wpath.end()) + "\\obs-lite";
 	}
-	return std::string("obs-light");
+	return std::string("obs-lite");
 }
 
 std::string OBSApp::GetAppDataPath()
@@ -81,7 +81,7 @@ static void open_log_file()
 	localtime_s(&tm_now, &now);
 
 	char name[64];
-	strftime(name, sizeof(name), "obs-light-%Y-%m-%d_%H-%M-%S.log", &tm_now);
+	strftime(name, sizeof(name), "obs-lite-%Y-%m-%d_%H-%M-%S.log", &tm_now);
 
 	std::string path = dir + "\\" + name;
 	fopen_s(&logFile, path.c_str(), "w");
@@ -135,7 +135,7 @@ bool OBSApp::StartupObs()
 	}
 
 	libobsInitialized = true;
-	blog(LOG_INFO, "obs-light %s (libobs %s)", obs_get_version_string(),
+	blog(LOG_INFO, "obs-lite %s (libobs %s)", obs_get_version_string(),
 	     obs_get_version_string());
 	return true;
 }
@@ -224,7 +224,7 @@ bool OBSApp::Initialize()
 	if (!LoadModules())
 		return false;
 
-	blog(LOG_INFO, "obs-light initialized successfully");
+	blog(LOG_INFO, "obs-lite initialized successfully");
 	return true;
 }
 
@@ -253,7 +253,7 @@ int OBSApp::RunSmokeTest()
 	open_log_file();
 	base_set_log_handler(log_handler, nullptr);
 
-	blog(LOG_INFO, "obs-light smoke test starting");
+	blog(LOG_INFO, "obs-lite smoke test starting");
 
 	if (!obs_startup("en-US", nullptr, nullptr)) {
 		blog(LOG_ERROR, "SMOKE TEST FAILED: obs_startup");

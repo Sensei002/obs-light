@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Validates an obs-light build output before packaging/release.
+    Validates an obs-lite build output before packaging/release.
 .DESCRIPTION
     Checks that the executable exists, is x64, has the expected version,
     that required plugins/DLLs are present, and generates SHA256 checksums.
@@ -35,9 +35,9 @@ $pluginDir = Join-Path $releaseDir "obs-plugins\64bit"
 Write-Host "Validating build: $releaseDir"
 
 # 1. Executable exists
-$exe = Join-Path $binDir "obs-light.exe"
-if (-not (Test-Path $exe)) { Fail "obs-light.exe not found at $exe" }
-Write-Host "OK: obs-light.exe present"
+$exe = Join-Path $binDir "obs-lite.exe"
+if (-not (Test-Path $exe)) { Fail "obs-lite.exe not found at $exe" }
+Write-Host "OK: obs-lite.exe present"
 
 # 2. Architecture is x64 (PE machine == 0x8664)
 $fs = [System.IO.File]::OpenRead($exe)
@@ -50,7 +50,7 @@ try {
 } finally {
     $fs.Close()
 }
-if ($machine -ne 0x8664) { Fail "obs-light.exe is not x64 (machine: 0x{0:X4})" -f $machine }
+if ($machine -ne 0x8664) { Fail "obs-lite.exe is not x64 (machine: 0x{0:X4})" -f $machine }
 Write-Host "OK: architecture x64"
 
 # 3. Version matches expected version
@@ -87,7 +87,7 @@ $required = @(
 foreach ($dll in $required) {
     if (-not (Test-Path (Join-Path $binDir $dll))) {
         if ($dll -eq "obs-frontend-api.dll") {
-            Write-Host "INFO: obs-frontend-api.dll not present (not required by obs-light)"
+            Write-Host "INFO: obs-frontend-api.dll not present (not required by obs-lite)"
             continue
         }
         Fail "required DLL missing: $dll"

@@ -1,4 +1,4 @@
-#include "recorder.hpp"
+﻿#include "recorder.hpp"
 
 #include <ctime>
 
@@ -113,7 +113,7 @@ std::string Recorder::EncoderId() const
 
 std::string Recorder::RecordingExtension() const
 {
-	return AppConfig::RemuxToMP4() ? "mkv" : "mkv";
+	return AppConfig::RecordingFormat();
 }
 
 obs_data_t *Recorder::BuildVideoEncoderSettings() const
@@ -170,7 +170,7 @@ bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
 
 	obs_data_t *videoSettings = BuildVideoEncoderSettings();
 	*videoEncoderOut = obs_video_encoder_create(
-		videoId.c_str(), "obs-light video", videoSettings, nullptr);
+		videoId.c_str(), "obs-lite video", videoSettings, nullptr);
 	obs_data_release(videoSettings);
 
 	if (!*videoEncoderOut) {
@@ -182,7 +182,7 @@ bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
 	obs_data_t *audioSettings = obs_data_create();
 	obs_data_set_int(audioSettings, "bitrate", AppConfig::AudioBitrateKbps());
 	*audioEncoderOut = obs_audio_encoder_create(
-		"ffmpeg_aac", "obs-light audio", audioSettings, 0, nullptr);
+		"ffmpeg_aac", "obs-lite audio", audioSettings, 0, nullptr);
 	obs_data_release(audioSettings);
 
 	if (!*audioEncoderOut) {

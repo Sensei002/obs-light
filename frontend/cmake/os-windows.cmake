@@ -1,4 +1,4 @@
-# obs-light Windows-specific frontend build setup
+# obs-lite Windows-specific frontend build setup
 
 if(NOT TARGET OBS::w32-pthreads)
   add_subdirectory("${CMAKE_SOURCE_DIR}/deps/w32-pthreads" "${CMAKE_BINARY_DIR}/deps/w32-pthreads")
@@ -7,12 +7,12 @@ endif()
 target_link_libraries(obs-studio PRIVATE OBS::w32-pthreads)
 
 # Copy the icon to the build directory so the .rc can reference it by filename
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/obs-light.ico"
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/obs-lite.ico"
      DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-configure_file(cmake/templates/obs-light.rc.in obs-light.rc)
+configure_file(cmake/templates/obs-lite.rc.in obs-lite.rc)
 
-target_sources(obs-studio PRIVATE obs-light.rc)
+target_sources(obs-studio PRIVATE obs-lite.rc)
 
 target_compile_definitions(obs-studio PRIVATE PSAPI_VERSION=2)
 

@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>obs-light.png</file>
+        <file>obs-lite.png</file>
     </qresource>
 </RCC>

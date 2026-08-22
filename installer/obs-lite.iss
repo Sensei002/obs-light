@@ -1,16 +1,16 @@
-; obs-light Inno Setup installer script
-; Produces obs-light-Setup-x64.exe
+﻿; obs-lite Inno Setup installer script
+; Produces obs-lite-Setup-x64.exe
 ;
 ; Build from CI:
-;   ISCC.exe /DMyAppVersion=0.1.0 /DConfigName=RelWithDebInfo obs-light.iss
+;   ISCC.exe /DMyAppVersion=0.1.0 /DConfigName=RelWithDebInfo obs-lite.iss
 
-#define MyAppName "obs-light"
+#define MyAppName "obs-lite"
 #ifndef MyAppVersion
 #define MyAppVersion "0.1.1"
 #endif
-#define MyAppPublisher "obs-light contributors"
+#define MyAppPublisher "obs-lite contributors"
 #define MyAppURL "https://github.com/Sensei002/obs-light"
-#define MyAppExeName "obs-light.exe"
+#define MyAppExeName "obs-lite.exe"
 #ifndef ConfigName
 #define ConfigName "Release"
 #endif
@@ -27,11 +27,11 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\build\installer
-OutputBaseFilename=obs-light-Setup-x64
+OutputBaseFilename=obs-lite-Setup-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=..\frontend\resources\obs-light.ico
+SetupIconFile=..\frontend\resources\obs-lite.ico
 UninstallDisplayIcon={app}\bin\64bit\{#MyAppExeName}
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin

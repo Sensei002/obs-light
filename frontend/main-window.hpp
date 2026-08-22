@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 
@@ -18,7 +18,7 @@ class Recorder;
 class Hotkeys;
 class SettingsDialog;
 
-/* obs-light main window: preview, capture selectors, record/replay controls,
+/* obs-lite main window: preview, capture selectors, record/replay controls,
  * status line and system tray integration. */
 class MainWindow : public QMainWindow {
 	Q_OBJECT

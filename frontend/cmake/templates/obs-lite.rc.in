@@ -1,6 +1,6 @@
-#include <winver.h>
+﻿#include <winver.h>
 
-IDI_ICON1 ICON "obs-light.ico"
+IDI_ICON1 ICON "obs-lite.ico"
 
 #define OBS_LIGHT_VERSION_MAJOR @OBS_VERSION_MAJOR@
 #define OBS_LIGHT_VERSION_MINOR @OBS_VERSION_MINOR@
@@ -26,11 +26,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "@OBS_COMPANY_NAME@"
-            VALUE "FileDescription", "obs-light - @OBS_COMMENTS@"
+            VALUE "FileDescription", "obs-lite - @OBS_COMMENTS@"
             VALUE "FileVersion", OBS_LIGHT_VERSION_STRING
-            VALUE "InternalName", "obs-light"
+            VALUE "InternalName", "obs-lite"
             VALUE "LegalCopyright", "@OBS_LEGAL_COPYRIGHT@"
-            VALUE "OriginalFilename", "obs-light.exe"
+            VALUE "OriginalFilename", "obs-lite.exe"
             VALUE "ProductName", "@OBS_PRODUCT_NAME@"
             VALUE "ProductVersion", OBS_LIGHT_VERSION_STRING
         END

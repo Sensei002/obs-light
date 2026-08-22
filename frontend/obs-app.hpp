@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 
@@ -6,7 +6,7 @@
 
 class QApplication;
 
-/* Owns the libobs runtime for obs-light: startup, module loading, audio and
+/* Owns the libobs runtime for obs-lite: startup, module loading, audio and
  * video setup, logging and shutdown.  The single instance is created in
  * main() and torn down after the Qt event loop finishes. */
 class OBSApp {

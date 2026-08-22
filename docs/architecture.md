@@ -1,6 +1,6 @@
-# obs-light architecture
+﻿# obs-lite architecture
 
-obs-light is a fork of OBS Studio 32.2.2 that removes everything unrelated
+obs-lite is a fork of OBS Studio 32.2.2 that removes everything unrelated
 to local recording and keeps the mature low-level multimedia stack intact.
 
 ## What is kept (upstream code, unmodified)
@@ -21,8 +21,8 @@ to local recording and keeps the mature low-level multimedia stack intact.
 
 ## What is removed
 
-- `frontend/` (full OBS Studio UI) — replaced by the obs-light frontend
-- `plugins/obs-outputs`, `rtmp-services` — streaming outputs (RTMP/SRT/etc.)
+- `frontend/` (full OBS Studio UI) â€” replaced by the obs-lite frontend
+- `plugins/obs-outputs`, `rtmp-services` â€” streaming outputs (RTMP/SRT/etc.)
 - `plugins/obs-browser`, `obs-websocket`, `obs-vst`, `obs-text`,
   `obs-transitions`, `obs-filters`, `nv-filters`, `obs-qsv11`, `obs-amf`,
   `vlc-video`, `decklink*`, `aja*`, `mac-*`, `linux-*`, `coreaudio-encoder`,
@@ -39,45 +39,45 @@ at all.
 
 Key components:
 
-- `obs-app.{hpp,cpp}` — libobs lifecycle: `obs_startup`, module loading,
-  audio/video reset, logging to `%APPDATA%\obs-light\logs\`, and the
+- `obs-app.{hpp,cpp}` â€” libobs lifecycle: `obs_startup`, module loading,
+  audio/video reset, logging to `%APPDATA%\obs-lite\logs\`, and the
   headless `--smoke-test` mode used by CI.
-- `app-config.{hpp,cpp}` — settings persisted as JSON
-  (`%APPDATA%\obs-light\config.json`) via `obs_data`.
-- `capture-manager.{hpp,cpp}` — the single scene attached to main canvas
+- `app-config.{hpp,cpp}` â€” settings persisted as JSON
+  (`%APPDATA%\obs-lite\config.json`) via `obs_data`.
+- `capture-manager.{hpp,cpp}` â€” the single scene attached to main canvas
   channel 0, plus the three sources:
   - `game_capture` (win-capture)
   - `monitor_capture` (win-capture)
   - `wasapi_process_output_capture` (win-wasapi)
   It also provides window enumeration using libobs' exported window helpers
   (`ms_fill_window_list`), producing OBS window strings (`title:class:exe`).
-- `recorder.{hpp,cpp}` — recording output (`ffmpeg_muxer`) and replay buffer
+- `recorder.{hpp,cpp}` â€” recording output (`ffmpeg_muxer`) and replay buffer
   output (`replay_buffer`), encoder selection
-  (`obs_nvenc_h264_tex` → `obs_nvenc_h264_soft` → `obs_x264`), output
+  (`obs_nvenc_h264_tex` â†’ `obs_nvenc_h264_soft` â†’ `obs_x264`), output
   signals, and async replay save.
-- `preview-widget.{hpp,cpp}` — `obs_display`-backed preview widget
+- `preview-widget.{hpp,cpp}` â€” `obs_display`-backed preview widget
   (equivalent of upstream `OBSQTDisplay` for the OBS 32 display API).
-- `hotkeys.{hpp,cpp}` — Win32 `RegisterHotKey` global hotkeys delivered via
+- `hotkeys.{hpp,cpp}` â€” Win32 `RegisterHotKey` global hotkeys delivered via
   `WM_HOTKEY` to the main window.
-- `settings-dialog.{hpp,cpp}` — settings UI (General/Video/Audio/Replay/
+- `settings-dialog.{hpp,cpp}` â€” settings UI (General/Video/Audio/Replay/
   Hotkeys).
-- `main-window.{hpp,cpp}` — main window, tray icon, status/stats timer.
+- `main-window.{hpp,cpp}` â€” main window, tray icon, status/stats timer.
 
 ## Runtime model
 
 ```
-Game ──► Game Capture ──► scene (channel 0) ──► libobs video thread
-                                                    │
-                      ┌─────────────────────────────┤
-                      │                             │
-              preview display ◄── main canvas  ──► NVENC/x264 ──► ffmpeg-mux
-                      │                texture          │
-                 (can be disabled)                      │
-                                                  ┌─────┴──────┐
-                                                  │            │
+Game â”€â”€â–º Game Capture â”€â”€â–º scene (channel 0) â”€â”€â–º libobs video thread
+                                                    â”‚
+                      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+                      â”‚                             â”‚
+              preview display â—„â”€â”€ main canvas  â”€â”€â–º NVENC/x264 â”€â”€â–º ffmpeg-mux
+                      â”‚                texture          â”‚
+                 (can be disabled)                      â”‚
+                                                  â”Œâ”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”
+                                                  â”‚            â”‚
                                         replay_buffer    ffmpeg_muxer
                                         (packet ring)    (recording file)
-                                              │
+                                              â”‚
                                         save (async mux)
 ```
 
@@ -85,17 +85,17 @@ Game ──► Game Capture ──► scene (channel 0) ──► libobs video t
   display requests frames); disabling the preview stops preview rendering
   but recording continues.
 - Replay buffering stores *encoded packets* in a ring bounded by time and
-  size — no re-encoding on save, and saving muxes on its own thread.
+  size â€” no re-encoding on save, and saving muxes on its own thread.
 - Disk writes are decoupled from capture: the `ffmpeg-mux` process does the
   container muxing, so a slow disk cannot stall the capture pipeline.
 
 ## Divergence from upstream (for merge tracking)
 
-- `CMakeLists.txt` — project renamed to obs-light, plugin list trimmed,
+- `CMakeLists.txt` â€” project renamed to obs-lite, plugin list trimmed,
   `test/test-input` removed, upstream branding overridden.
-- `plugins/CMakeLists.txt` — only 5 plugins retained.
-- `frontend/` — fully replaced (see above). The executable target is still
-  named `obs-studio` internally (with `OUTPUT_NAME obs-light`) so that
+- `plugins/CMakeLists.txt` â€” only 5 plugins retained.
+- `frontend/` â€” fully replaced (see above). The executable target is still
+  named `obs-studio` internally (with `OUTPUT_NAME obs-lite`) so that
   `cmake/windows/helpers.cmake` dependency bundling keeps working unchanged.
 - Everything else is upstream code kept byte-identical for easy merging.
 

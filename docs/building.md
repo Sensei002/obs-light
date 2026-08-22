@@ -1,6 +1,6 @@
-# Building obs-light
+﻿# Building obs-lite
 
-obs-light is **built exclusively through GitHub Actions**. You do not need a
+obs-lite is **built exclusively through GitHub Actions**. You do not need a
 local build environment, Visual Studio, Qt, or any dependency installed on
 your machine.
 
@@ -24,8 +24,8 @@ The single workflow `.github/workflows/build-release.yml` runs on the
    OBS version in `CMakePresets.json`, verifying each against its pinned
    SHA-256 hash before extraction.
 7. Builds libobs, the graphics modules, the five retained plugins and the
-   obs-light frontend.
-8. Runs the headless smoke test: `obs-light.exe --smoke-test` verifies that
+   obs-lite frontend.
+8. Runs the headless smoke test: `obs-lite.exe --smoke-test` verifies that
    the binary loads, all modules load, and the required source/encoder/
    output types are registered.
 9. Validates the artifacts (x64 architecture, version, required DLLs and
@@ -44,7 +44,7 @@ a GitHub Release.
 | `env.BUILD_TYPE` | `RelWithDebInfo` | CMake build configuration |
 | `OBS_VERSION_OVERRIDE` | computed | Version from the git tag (or `0.0.0-ci`) |
 
-Qt and obs-deps versions are not configured in the workflow — they come
+Qt and obs-deps versions are not configured in the workflow â€” they come
 pinned in `CMakePresets.json` (the `dependencies` preset), which the
 buildspec mechanism reads at configure time. When merging an upstream
 update, this file brings the matching dependency versions automatically.
@@ -65,5 +65,5 @@ cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -T v143 `
   -DENABLE_SCRIPTING=OFF `
   -DOBS_VERSION_OVERRIDE=0.1.0
 cmake --build build --config RelWithDebInfo
-build\rundir\RelWithDebInfo\bin\64bit\obs-light.exe --smoke-test
+build\rundir\RelWithDebInfo\bin\64bit\obs-lite.exe --smoke-test
 ```

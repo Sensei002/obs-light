@@ -1,8 +1,8 @@
-# Third-Party Notices
+﻿# Third-Party Notices
 
-obs-light is a fork of **OBS Studio** (https://obsproject.com), which is
+obs-lite is a fork of **OBS Studio** (https://obsproject.com), which is
 Copyright (C) 2012-2026 Lain Bailey and the OBS Project contributors, and is
-distributed under the GNU General Public License version 2 (or later) — see
+distributed under the GNU General Public License version 2 (or later) â€” see
 [COPYING](COPYING).
 
 The following components are retained from the upstream OBS Studio source
@@ -10,7 +10,7 @@ tree and carry their own licenses. The upstream project maintains the
 authoritative license texts in its repository
 (https://github.com/obsproject/obs-studio).
 
-## Runtime components linked into obs-light
+## Runtime components linked into obs-lite
 
 | Component                 | License           | Notes                                          |
 | ------------------------- | ----------------- | ---------------------------------------------- |
@@ -34,7 +34,7 @@ the upstream OBS Studio source tree:
 | -------------------- | ----------------- | ------------------------------------------ |
 | FFmpeg               | LGPL-2.1-or-later | obs-ffmpeg (muxing/encoding), ffmpeg-mux   |
 | x264                 | GPL-2.0-or-later  | obs-x264 software encoder                  |
-| Qt 6                 | LGPL-3.0-only     | obs-light frontend UI                      |
+| Qt 6                 | LGPL-3.0-only     | obs-lite frontend UI                      |
 | zlib                 | zlib              | via FFmpeg                                 |
 | w32-pthreads         | LGPL-2.1-or-later | libobs, obs-ffmpeg                         |
 | NvEncodeAPI headers  | NVIDIA license    | obs-nvenc (headers only; driver provides   |
@@ -45,12 +45,12 @@ json11, blake2) retain their original licenses as shipped by OBS Studio.
 
 ## Trademarks
 
-"OBS" and the OBS logo are trademarks of the OBS Project. obs-light is an
+"OBS" and the OBS logo are trademarks of the OBS Project. obs-lite is an
 independent fork and is not endorsed by or affiliated with the OBS Project.
 This project does not use OBS branding for the application identity.
 
 ## Distribution
 
-When redistributing obs-light (binary or source), you must comply with the
+When redistributing obs-lite (binary or source), you must comply with the
 GPL-2.0 license of the retained OBS code, including providing the complete
 corresponding source code and this notice.

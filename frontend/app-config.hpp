@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 
 #include <obs.h>
 
-/* App configuration stored in %APPDATA%/obs-light/config.json
+/* App configuration stored in %APPDATA%/obs-lite/config.json
  *
  * All state is kept in a single obs_data object that is persisted with
  * obs_data_save_json_safe on exit and after setting changes. */
@@ -14,6 +14,7 @@ namespace AppConfig {
 /* General */
 std::string GetRecordingDir();
 std::string GetReplayDir();
+std::string RecordingFormat(); /* "mkv" or "mp4" */
 bool StartWithWindows();
 void SetStartWithWindows(bool enabled);
 bool MinimizeToTray();

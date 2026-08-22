@@ -15,7 +15,7 @@ endif()
 # Target is named "obs-studio" so that OBS's cmake/windows/helpers.cmake
 # bundles the runtime dependencies (Qt DLLs, FFmpeg, obs.dll, ...) into the
 # rundir and installs the executable next to them.  The actual file name is
-# obs-light.exe via OUTPUT_NAME below.
+# obs-lite.exe via OUTPUT_NAME below.
 add_executable(obs-studio)
 add_executable(OBS::studio ALIAS obs-studio)
 
@@ -64,10 +64,10 @@ target_link_libraries(
 
 set_target_properties(
   obs-studio
-  PROPERTIES AUTOMOC TRUE AUTORCC TRUE WIN32_EXECUTABLE TRUE OUTPUT_NAME obs-light FOLDER frontend
+  PROPERTIES AUTOMOC TRUE AUTORCC TRUE WIN32_EXECUTABLE TRUE OUTPUT_NAME obs-lite FOLDER frontend
 )
 
-target_sources(obs-studio PRIVATE resources/obs-light.qrc)
+target_sources(obs-studio PRIVATE resources/obs-lite.qrc)
 
 set_target_properties_obs(obs-studio PROPERTIES FOLDER frontend)
 

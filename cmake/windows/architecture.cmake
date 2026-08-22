@@ -1,4 +1,4 @@
-# OBS CMake Windows Architecture Helper
+﻿# OBS CMake Windows Architecture Helper
 
 include_guard(GLOBAL)
 
@@ -13,7 +13,7 @@ if(NOT DEFINED OBS_PARENT_ARCHITECTURE)
 endif()
 
 if(OBS_PARENT_ARCHITECTURE STREQUAL CMAKE_VS_PLATFORM_NAME)
-  # obs-light fork: forward settings to the child architecture builds, which
+  # obs-lite fork: forward settings to the child architecture builds, which
   # configure with their own cache and therefore do not inherit -D flags:
   #  - ENABLE_FRONTEND is OFF in children: the Qt frontend is x64-only and
   #    the child builds exist solely for the 32-bit graphics-hook executables

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28...3.30)
+﻿cmake_minimum_required(VERSION 3.28...3.30)
 
 option(ENABLE_PLUGINS "Enable building OBS plugins" ON)
 
@@ -9,7 +9,7 @@ endif()
 
 set_property(GLOBAL APPEND PROPERTY OBS_FEATURES_ENABLED "Plugin Support")
 
-# obs-light plugin selection.
+# obs-lite plugin selection.
 #
 # Only the components required for local recording, replay buffer, game
 # capture, display capture and application audio capture are built:
