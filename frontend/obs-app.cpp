@@ -208,8 +208,6 @@ bool OBSApp::Initialize()
 
 	if (!StartupObs())
 		return false;
-	if (!LoadModules())
-		return false;
 
 	obs_set_ui_task_handler(ui_task_handler);
 
@@ -218,6 +216,12 @@ bool OBSApp::Initialize()
 	if (!InitAudio())
 		return false;
 	if (!ResetVideo())
+		return false;
+
+	/* Load modules after video/graphics initialization: win-capture probes
+	 * the graphics device type during obs_module_load to decide between the
+	 * DXGI duplicator and the slow GDI BitBlt monitor capture. */
+	if (!LoadModules())
 		return false;
 
 	blog(LOG_INFO, "obs-light initialized successfully");

@@ -169,6 +169,7 @@ void CaptureManager::SetDisplayMonitor(const std::string &monitorId)
 		return;
 
 	obs_data_t *settings = obs_source_get_settings(displayCapture);
+	obs_data_set_string(settings, "monitor_id", monitorId.c_str());
 	obs_data_set_int(settings, "monitor",
 			 monitorId.empty() ? 0 : atoi(monitorId.c_str()));
 	obs_source_update(displayCapture, settings);
@@ -180,7 +181,7 @@ std::string CaptureManager::GetDisplayMonitorId() const
 	if (!displayCapture)
 		return "";
 	obs_data_t *settings = obs_source_get_settings(displayCapture);
-	std::string monitor = std::to_string(obs_data_get_int(settings, "monitor"));
+	std::string monitor = obs_data_get_string(settings, "monitor_id");
 	obs_data_release(settings);
 	return monitor;
 }

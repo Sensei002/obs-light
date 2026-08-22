@@ -11,6 +11,7 @@
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
+#include <QList>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
@@ -510,25 +511,68 @@ void MainWindow::ReloadWindowLists()
 	gameWindow->setCurrentIndex(gameIdx < 0 ? 0 : gameIdx);
 	gameWindow->blockSignals(false);
 
-	/* Display monitors (same enumeration order as monitor_capture) */
+	/* Display monitors (device IDs, same format as monitor_capture's
+	 * monitor_id setting) */
 	QString currentMonitor = displayMonitor->currentData().toString();
 	displayMonitor->blockSignals(true);
 	displayMonitor->clear();
-	displayMonitor->addItem("Primary display", "");
-	int monitorCount = 0;
+	struct MonitorEntry {
+		QString deviceId;
+		QString name;
+		bool isPrimary;
+	};
+	QList<MonitorEntry> monitors;
 	EnumDisplayMonitors(NULL, NULL,
-			    [](HMONITOR, HDC, LPRECT, LPARAM param) -> BOOL {
-				    (*(int *)param)++;
+			    [](HMONITOR handle, HDC, LPRECT, LPARAM param) -> BOOL {
+				    auto *list = (QList<MonitorEntry> *)param;
+				    MONITORINFOEXA mi;
+				    mi.cbSize = sizeof(mi);
+				    if (GetMonitorInfoA(handle, (LPMONITORINFO)&mi)) {
+					    DISPLAY_DEVICEA device;
+					    device.cb = sizeof(device);
+					    if (EnumDisplayDevicesA(mi.szDevice, 0, &device,
+								   EDD_GET_DEVICE_INTERFACE_NAME)) {
+						    MonitorEntry entry;
+						    entry.deviceId = device.DeviceID;
+						    entry.name = QString("%1: %2x%3 @ %4,%5")
+									 .arg(device.DeviceID)
+									 .arg(mi.rcMonitor.right -
+									      mi.rcMonitor.left)
+									 .arg(mi.rcMonitor.bottom -
+									      mi.rcMonitor.top)
+									 .arg(mi.rcMonitor.left)
+									 .arg(mi.rcMonitor.top);
+						    entry.isPrimary =
+							    (mi.dwFlags & MONITORINFOF_PRIMARY) != 0;
+						    list->append(entry);
+					    }
+				    }
 				    return TRUE;
 			    },
-			    (LPARAM)&monitorCount);
-	for (int i = 0; i < monitorCount; i++) {
-		displayMonitor->addItem(QString("Display %1").arg(i + 1),
-					QString::number(i));
+			    (LPARAM)&monitors);
+	QString primaryId;
+	for (const auto &m : monitors) {
+		if (m.isPrimary) {
+			primaryId = m.deviceId;
+			break;
+		}
 	}
+	if (primaryId.isEmpty() && !monitors.isEmpty())
+		primaryId = monitors.first().deviceId;
+	displayMonitor->addItem("Primary display", primaryId);
+	for (const auto &m : monitors)
+		displayMonitor->addItem(m.name, m.deviceId);
 	int monitorIdx = displayMonitor->findData(currentMonitor);
-	displayMonitor->setCurrentIndex(monitorIdx < 0 ? 0 : monitorIdx);
+	if (monitorIdx < 0)
+		monitorIdx = 0;
+	displayMonitor->setCurrentIndex(monitorIdx);
 	displayMonitor->blockSignals(false);
+
+	/* Migrate stale/legacy monitor values (old integer index format) to the
+	 * resolved device ID so the duplicator source can find the monitor. */
+	if (monitorIdx == 0 &&
+	    currentMonitor != displayMonitor->itemData(0).toString())
+		OnDisplayMonitorChanged(0);
 
 	/* Application audio windows */
 	QString currentAudio = appAudioWindow->currentData().toString();
