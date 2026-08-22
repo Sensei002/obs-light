@@ -41,6 +41,21 @@ public:
 	std::string GetAppAudioWindow() const;
 	void SetAppAudioEnabled(bool enabled);
 
+	/* Desktop audio (track 1) and microphone (track 2) */
+	void SetDesktopAudioDevice(const std::string &deviceId);
+	void SetMicDevice(const std::string &deviceId);
+	std::string GetMicDevice() const;
+	void SetDesktopAudioEnabled(bool enabled);
+	void SetMicEnabled(bool enabled);
+
+	/* Audio devices ("" = default) */
+	struct AudioDeviceEntry {
+		std::string name;
+		std::string id;
+	};
+	static std::vector<AudioDeviceEntry> EnumerateAudioDevices(
+		bool input);
+
 	/* Refresh the window lists used by the UI pickers. */
 	struct WindowEntry {
 		std::string name;
@@ -59,11 +74,15 @@ private:
 	obs_scene_t *scene = nullptr;
 	obs_source_t *gameCapture = nullptr;
 	obs_source_t *displayCapture = nullptr;
+	obs_source_t *desktopAudio = nullptr;
+	obs_source_t *micCapture = nullptr;
 	obs_source_t *appAudio = nullptr;
 	obs_sceneitem_t *gameItem = nullptr;
 	obs_sceneitem_t *displayItem = nullptr;
 
 	VideoSource videoSource = VideoSource::GameCapture;
 	bool appAudioEnabled = true;
+	bool desktopAudioEnabled = true;
+	bool micEnabled = true;
 	bool initialized = false;
 };

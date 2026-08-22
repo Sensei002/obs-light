@@ -49,8 +49,10 @@ signals:
 private:
 	void DestroyOutputs();
 	bool CreateEncoders(obs_encoder_t **videoEncoderOut,
-			    obs_encoder_t **audioEncoderOut);
+			    obs_encoder_t *audioEncodersOut[],
+			    size_t audioEncoderCount);
 	obs_data_t *BuildVideoEncoderSettings() const;
+	obs_data_t *BuildAudioEncoderSettings() const;
 	std::string BuildOutputPath() const;
 
 	/* Signal handlers (C callbacks) */

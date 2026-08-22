@@ -167,7 +167,26 @@ bool OBSApp::ResetVideo()
 {
 	struct obs_video_info ovi = {};
 	ovi.graphics_module = "libobs-d3d11";
-	ovi.fps_num = AppConfig::GetFPSNum();
+
+	/* FPS 0 = auto: match the primary monitor refresh rate so recording
+	 * is frame-aligned with the display (no judder). */
+	uint32_t fpsNum = AppConfig::GetFPSNum();
+	if (fpsNum == 0) {
+		DEVMODEW dm = {};
+		dm.dmSize = sizeof(dm);
+		if (EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, &dm) &&
+		    dm.dmDisplayFrequency > 0) {
+			fpsNum = (uint32_t)dm.dmDisplayFrequency;
+			blog(LOG_INFO, "auto FPS: using monitor refresh rate %u Hz",
+			     fpsNum);
+		} else {
+			fpsNum = 60;
+			blog(LOG_INFO, "auto FPS: failed to query monitor, "
+				      "falling back to 60 Hz");
+		}
+	}
+
+	ovi.fps_num = fpsNum;
 	ovi.fps_den = AppConfig::GetFPSDen();
 	ovi.base_width = AppConfig::GetBaseWidth();
 	ovi.base_height = AppConfig::GetBaseHeight();

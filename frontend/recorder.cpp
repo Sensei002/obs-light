@@ -158,7 +158,8 @@ obs_data_t *Recorder::BuildVideoEncoderSettings() const
 }
 
 bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
-			      obs_encoder_t **audioEncoderOut)
+			      obs_encoder_t *audioEncodersOut[],
+			      size_t audioEncoderCount)
 {
 	std::string videoId = EncoderId();
 	if (videoId.empty()) {
@@ -179,23 +180,38 @@ bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
 		return false;
 	}
 
-	obs_data_t *audioSettings = obs_data_create();
-	obs_data_set_int(audioSettings, "bitrate", AppConfig::AudioBitrateKbps());
-	*audioEncoderOut = obs_audio_encoder_create(
-		"ffmpeg_aac", "obs-lite audio", audioSettings, 0, nullptr);
-	obs_data_release(audioSettings);
-
-	if (!*audioEncoderOut) {
-		obs_encoder_release(*videoEncoderOut);
-		*videoEncoderOut = nullptr;
-		emit errorOccurred("Failed to create the AAC audio encoder.");
-		return false;
-	}
-
-	/* Bind the encoders to the main video/audio outputs so the output
-	 * layer can initialize them ("media set" check in obs-encoder.c). */
+	/* Bind the video encoder to the main video output so the output
+	 * layer can initialize it ("media set" check in obs-encoder.c). */
 	obs_encoder_set_video(*videoEncoderOut, obs_get_video());
-	obs_encoder_set_audio(*audioEncoderOut, obs_get_audio());
+
+	/* One audio encoder per track (0 = desktop, 1 = microphone,
+	 * 2 = application audio).  Each encoder picks up its track's
+	 * pre-mixed audio from the main audio output. */
+	for (size_t i = 0; i < audioEncoderCount; i++) {
+		char name[32];
+		snprintf(name, sizeof(name), "obs-lite audio %zu", i + 1);
+
+		obs_data_t *audioSettings = BuildAudioEncoderSettings();
+		audioEncodersOut[i] = obs_audio_encoder_create(
+			AppConfig::AudioCodec().c_str(), name, audioSettings, (size_t)i,
+			nullptr);
+		obs_data_release(audioSettings);
+
+		if (!audioEncodersOut[i]) {
+			for (size_t j = 0; j < i; j++)
+				obs_encoder_release(audioEncodersOut[j]);
+			obs_encoder_release(*videoEncoderOut);
+			*videoEncoderOut = nullptr;
+			emit errorOccurred(
+				QString("Failed to create the audio encoder for "
+					"track %1.")
+					.arg(i + 1));
+			return false;
+		}
+
+		/* Bind the audio encoder to the main audio output */
+		obs_encoder_set_audio(audioEncodersOut[i], obs_get_audio());
+	}
 
 	return true;
 }
@@ -220,9 +236,10 @@ bool Recorder::StartRecording()
 	if (RecordingActive())
 		return false;
 
+	constexpr size_t audioEncoderCount = 3;
 	obs_encoder_t *videoEncoder = nullptr;
-	obs_encoder_t *audioEncoder = nullptr;
-	if (!CreateEncoders(&videoEncoder, &audioEncoder))
+	obs_encoder_t *audioEncoders[audioEncoderCount] = {};
+	if (!CreateEncoders(&videoEncoder, audioEncoders, audioEncoderCount))
 		return false;
 
 	recordingPath = BuildOutputPath();
@@ -236,16 +253,19 @@ bool Recorder::StartRecording()
 
 	if (!recordOutput) {
 		obs_encoder_release(videoEncoder);
-		obs_encoder_release(audioEncoder);
+		for (size_t i = 0; i < audioEncoderCount; i++)
+			obs_encoder_release(audioEncoders[i]);
 		recordingPath.clear();
 		emit errorOccurred("Failed to create the recording output.");
 		return false;
 	}
 
 	obs_output_set_video_encoder(recordOutput, videoEncoder);
-	obs_output_set_audio_encoder(recordOutput, audioEncoder, 0);
+	for (size_t i = 0; i < audioEncoderCount; i++)
+		obs_output_set_audio_encoder(recordOutput, audioEncoders[i], (size_t)i);
 	obs_encoder_release(videoEncoder);
-	obs_encoder_release(audioEncoder);
+	for (size_t i = 0; i < audioEncoderCount; i++)
+		obs_encoder_release(audioEncoders[i]);
 
 	signal_handler_t *sh = obs_output_get_signal_handler(recordOutput);
 	signal_handler_connect(sh, "start", OnRecordStart, this);
@@ -280,9 +300,10 @@ bool Recorder::StartReplayBuffer()
 	if (ReplayBufferActive())
 		return false;
 
+	constexpr size_t audioEncoderCount = 3;
 	obs_encoder_t *videoEncoder = nullptr;
-	obs_encoder_t *audioEncoder = nullptr;
-	if (!CreateEncoders(&videoEncoder, &audioEncoder))
+	obs_encoder_t *audioEncoders[audioEncoderCount] = {};
+	if (!CreateEncoders(&videoEncoder, audioEncoders, audioEncoderCount))
 		return false;
 
 	obs_data_t *settings = obs_data_create();
@@ -302,15 +323,18 @@ bool Recorder::StartReplayBuffer()
 
 	if (!replayOutput) {
 		obs_encoder_release(videoEncoder);
-		obs_encoder_release(audioEncoder);
+		for (size_t i = 0; i < audioEncoderCount; i++)
+			obs_encoder_release(audioEncoders[i]);
 		emit errorOccurred("Failed to create the replay buffer output.");
 		return false;
 	}
 
 	obs_output_set_video_encoder(replayOutput, videoEncoder);
-	obs_output_set_audio_encoder(replayOutput, audioEncoder, 0);
+	for (size_t i = 0; i < audioEncoderCount; i++)
+		obs_output_set_audio_encoder(replayOutput, audioEncoders[i], (size_t)i);
 	obs_encoder_release(videoEncoder);
-	obs_encoder_release(audioEncoder);
+	for (size_t i = 0; i < audioEncoderCount; i++)
+		obs_encoder_release(audioEncoders[i]);
 
 	signal_handler_t *sh = obs_output_get_signal_handler(replayOutput);
 	signal_handler_connect(sh, "start", OnReplayStart, this);

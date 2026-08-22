@@ -260,10 +260,12 @@ void SettingsDialog::BuildUI()
 	videoLayout->addRow("Output resolution:", outputRes);
 
 fps = new QComboBox(videoTab);
+	fps->addItem("Auto (match monitor)", 0);
 	fps->addItem("30 FPS", 30);
 	fps->addItem("60 FPS", 60);
 	fps->addItem("100 FPS", 100);
 	fps->addItem("120 FPS", 120);
+	fps->addItem("144 FPS", 144);
 	videoLayout->addRow("FPS:", fps);
 
 	encoder = new QComboBox(videoTab);
@@ -320,9 +322,16 @@ fps = new QComboBox(videoTab);
 	audioBitrate->setSuffix(" Kbps");
 	audioLayout->addRow("Audio bitrate:", audioBitrate);
 
+	audioCodec = new QComboBox(audioTab);
+	audioCodec->addItem("AAC (best compatibility)", "ffmpeg_aac");
+	audioCodec->addItem("Opus (smaller, great for voice)", "ffmpeg_opus");
+	audioCodec->addItem("FLAC (lossless)", "ffmpeg_flac");
+	audioLayout->addRow("Audio codec:", audioCodec);
+
 	auto *audioNote = new QLabel(
-		"Application audio is captured from the window selected on the "
-		"main window.",
+		"Audio tracks: Track 1 = Desktop Audio, Track 2 = Microphone, "
+		"Track 3 = Application Audio. Each track is recorded separately "
+		"and can be muted/mixed in any video editor.",
 		audioTab);
 	audioNote->setWordWrap(true);
 	audioLayout->addRow("", audioNote);
@@ -449,6 +458,10 @@ void SettingsDialog::LoadSettings()
 
 	audioBitrate->setValue(AppConfig::AudioBitrateKbps());
 
+	int codecIdx =
+		audioCodec->findData(QString::fromStdString(AppConfig::AudioCodec()));
+	audioCodec->setCurrentIndex(codecIdx < 0 ? 0 : codecIdx);
+
 	int durationIdx =
 		replayDuration->findData(AppConfig::ReplayDurationSec());
 	replayDuration->setCurrentIndex(durationIdx < 0 ? 2 : durationIdx);
@@ -518,6 +531,8 @@ void SettingsDialog::SaveSettings()
 			    preset->currentData().toString().toUtf8().constData());
 
 	obs_data_set_int(config, "Audio.Bitrate", audioBitrate->value());
+	obs_data_set_string(config, "Audio.Codec",
+			    audioCodec->currentData().toString().toUtf8().constData());
 
 	obs_data_set_int(config, "Replay.DurationSec",
 			 replayDuration->currentData().toInt());

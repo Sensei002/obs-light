@@ -54,6 +54,7 @@ private slots:
 	void OnCaptureSourceChanged(int index);
 	void OnGameWindowChanged(int index);
 	void OnDisplayMonitorChanged(int index);
+	void OnMicDeviceChanged(int index);
 	void OnAppAudioWindowChanged(int index);
 	void OnAppAudioToggled(bool checked);
 
@@ -77,6 +78,7 @@ private:
 	QComboBox *captureSource = nullptr;
 	QComboBox *gameWindow = nullptr;
 	QComboBox *displayMonitor = nullptr;
+	QComboBox *micDevice = nullptr;
 	QComboBox *appAudioWindow = nullptr;
 	QSystemTrayIcon *trayIcon = nullptr;
 	QTimer *statsTimer = nullptr;

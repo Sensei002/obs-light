@@ -37,6 +37,7 @@ std::string GetEncoderPreset();
 
 /* Audio */
 int AudioBitrateKbps();
+std::string AudioCodec(); /* "ffmpeg_aac", "ffmpeg_opus", "ffmpeg_flac" */
 
 /* Replay */
 int ReplayDurationSec();
@@ -49,6 +50,7 @@ std::string GetGameCaptureWindow();
 int GetGameCapturePriority();
 bool GetCaptureCursor();
 std::string GetDisplayMonitorId(); /* "" = primary/auto */
+std::string GetMicDevice(); /* "" = default */
 std::string GetAppAudioWindow();
 bool AppAudioEnabled();
 

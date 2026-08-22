@@ -210,11 +210,19 @@ void MainWindow::BuildUI()
 	displayMonitor->setVisible(false);
 	captureRow->addWidget(displayMonitor);
 
-	auto *audioLabel = new QLabel("App Audio:", central);
+	/* Audio row: desktop (track 1), mic (track 2), app (track 3) */
+	auto *audioLabel = new QLabel("Mic:", central);
 	captureRow->addWidget(audioLabel);
 
+	micDevice = new QComboBox(central);
+	micDevice->setMinimumWidth(180);
+	captureRow->addWidget(micDevice);
+
+	auto *appAudioLabel = new QLabel("App Audio:", central);
+	captureRow->addWidget(appAudioLabel);
+
 	appAudioWindow = new QComboBox(central);
-	appAudioWindow->setMinimumWidth(200);
+	appAudioWindow->setMinimumWidth(180);
 	captureRow->addWidget(appAudioWindow, 1);
 
 	layout->addLayout(captureRow);
@@ -257,6 +265,8 @@ void MainWindow::BuildUI()
 		&MainWindow::OnGameWindowChanged);
 	connect(displayMonitor, &QComboBox::currentIndexChanged, this,
 		&MainWindow::OnDisplayMonitorChanged);
+	connect(micDevice, &QComboBox::currentIndexChanged, this,
+		&MainWindow::OnMicDeviceChanged);
 	connect(appAudioWindow, &QComboBox::currentIndexChanged, this,
 		&MainWindow::OnAppAudioWindowChanged);
 
@@ -466,6 +476,15 @@ void MainWindow::OnDisplayMonitorChanged(int index)
 	AppConfig::Save();
 }
 
+void MainWindow::OnMicDeviceChanged(int index)
+{
+	if (index < 0)
+		return;
+	QString value = micDevice->itemData(index).toString();
+	captureManager->SetMicDevice(value.toStdString());
+	captureManager->SetMicEnabled(true);
+}
+
 void MainWindow::OnAppAudioWindowChanged(int index)
 {
 	if (index < 0)
@@ -574,7 +593,21 @@ void MainWindow::ReloadWindowLists()
 	    currentMonitor != displayMonitor->itemData(0).toString())
 		OnDisplayMonitorChanged(0);
 
-	/* Application audio windows */
+	/* Microphone devices (track 2) */
+	QString currentMic = micDevice->currentData().toString();
+	micDevice->blockSignals(true);
+	micDevice->clear();
+	micDevice->addItem("Default microphone", "default");
+	auto micDevices = CaptureManager::EnumerateAudioDevices(true);
+	for (const auto &d : micDevices) {
+		micDevice->addItem(QString::fromStdString(d.name),
+				   QString::fromStdString(d.id));
+	}
+	int micIdx = micDevice->findData(currentMic);
+	micDevice->setCurrentIndex(micIdx < 0 ? 0 : micIdx);
+	micDevice->blockSignals(false);
+
+	/* Application audio windows (track 3) */
 	QString currentAudio = appAudioWindow->currentData().toString();
 	appAudioWindow->blockSignals(true);
 	appAudioWindow->clear();

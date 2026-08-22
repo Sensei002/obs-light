@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <shlobj.h>
 
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 
@@ -25,21 +26,39 @@ static std::string GetAppDataDir()
 	return std::string("obs-lite");
 }
 
+static std::string GetVideosDir()
+{
+	wchar_t path[MAX_PATH];
+	if (SHGetFolderPathW(NULL, CSIDL_MYVIDEO, NULL, SHGFP_TYPE_CURRENT, path) == S_OK) {
+		std::wstring wpath(path);
+		return std::string(wpath.begin(), wpath.end());
+	}
+	/* Fallback: %USERPROFILE%\Videos */
+	std::string userProfile = std::getenv("USERPROFILE") ? std::getenv("USERPROFILE") : "";
+	if (!userProfile.empty())
+		return userProfile + "\\Videos";
+	return GetAppDataDir() + "\\Videos";
+}
+
 static void EnsureDirs()
 {
 	std::string base = GetAppDataDir();
 	os_mkdirs(base.c_str());
 	os_mkdirs((base + "\\logs").c_str());
 
+	/* Default recording/replay directories: the user's Videos folder. */
+	std::string videosDir = GetVideosDir();
+	os_mkdirs(videosDir.c_str());
+
 	const char *recordingDir = obs_data_get_string(config, "General.RecordingDir");
 	if (!recordingDir || !*recordingDir) {
-		obs_data_set_string(config, "General.RecordingDir", (base + "\\recordings").c_str());
+		obs_data_set_string(config, "General.RecordingDir", videosDir.c_str());
 	}
 	os_mkdirs(obs_data_get_string(config, "General.RecordingDir"));
 
 	const char *replayDir = obs_data_get_string(config, "Replay.ReplayDir");
 	if (!replayDir || !*replayDir) {
-		obs_data_set_string(config, "Replay.ReplayDir", (base + "\\replays").c_str());
+		obs_data_set_string(config, "Replay.ReplayDir", videosDir.c_str());
 	}
 	os_mkdirs(obs_data_get_string(config, "Replay.ReplayDir"));
 }
@@ -60,7 +79,7 @@ void Load()
 	obs_data_set_int(config, "Video.BaseHeight", 1080);
 	obs_data_set_int(config, "Video.OutputWidth", 1920);
 	obs_data_set_int(config, "Video.OutputHeight", 1080);
-	obs_data_set_int(config, "Video.FPS", 60);
+	obs_data_set_int(config, "Video.FPS", 0); /* 0 = auto (match monitor) */
 	obs_data_set_string(config, "Video.Encoder", "auto");
 	obs_data_set_string(config, "Video.RateControl", "CBR");
 	obs_data_set_int(config, "Video.Bitrate", 8000);
@@ -69,6 +88,7 @@ void Load()
 	obs_data_set_string(config, "Video.Preset", "p5");
 
 	obs_data_set_int(config, "Audio.Bitrate", 160);
+	obs_data_set_string(config, "Audio.Codec", "ffmpeg_aac");
 
 	obs_data_set_int(config, "Replay.DurationSec", 60);
 	obs_data_set_int(config, "Replay.MaxSizeMB", 2048);
@@ -79,6 +99,7 @@ void Load()
 	obs_data_set_int(config, "Capture.GamePriority", 2); /* WINDOW_PRIORITY_EXE */
 	obs_data_set_bool(config, "Capture.CaptureCursor", true);
 	obs_data_set_string(config, "Capture.DisplayMonitor", "");
+	obs_data_set_string(config, "Capture.MicDevice", "");
 	obs_data_set_string(config, "Capture.AppAudioWindow", "");
 	obs_data_set_bool(config, "Capture.AppAudioEnabled", true);
 
@@ -282,6 +303,14 @@ int AudioBitrateKbps()
 	return (int)obs_data_get_int(config, "Audio.Bitrate");
 }
 
+std::string AudioCodec()
+{
+	const char *codec = obs_data_get_string(config, "Audio.Codec");
+	if (codec && *codec)
+		return codec;
+	return "ffmpeg_aac";
+}
+
 int ReplayDurationSec()
 {
 	return (int)obs_data_get_int(config, "Replay.DurationSec");
@@ -320,6 +349,11 @@ bool GetCaptureCursor()
 std::string GetDisplayMonitorId()
 {
 	return obs_data_get_string(config, "Capture.DisplayMonitor");
+}
+
+std::string GetMicDevice()
+{
+	return obs_data_get_string(config, "Capture.MicDevice");
 }
 
 std::string GetAppAudioWindow()

@@ -87,6 +87,7 @@ private:
 
 	/* Audio */
 	QSpinBox *audioBitrate = nullptr;
+	QComboBox *audioCodec = nullptr;
 
 	/* Replay */
 	QComboBox *replayDuration = nullptr;
