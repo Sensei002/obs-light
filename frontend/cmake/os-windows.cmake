@@ -6,6 +6,10 @@ endif()
 
 target_link_libraries(obs-studio PRIVATE OBS::w32-pthreads)
 
+# Copy the icon to the build directory so the .rc can reference it by filename
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/obs-light.ico"
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
 configure_file(cmake/templates/obs-light.rc.in obs-light.rc)
 
 target_sources(obs-studio PRIVATE obs-light.rc)

@@ -6,7 +6,7 @@
 
 #define MyAppName "obs-light"
 #ifndef MyAppVersion
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.1"
 #endif
 #define MyAppPublisher "obs-light contributors"
 #define MyAppURL "https://github.com/Sensei002/obs-light"
@@ -31,6 +31,7 @@ OutputBaseFilename=obs-light-Setup-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\frontend\resources\obs-light.ico
 UninstallDisplayIcon={app}\bin\64bit\{#MyAppExeName}
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
@@ -50,6 +51,9 @@ Source: "..\build\rundir\{#ConfigName}\bin\64bit\*"; DestDir: "{app}\bin\64bit";
 
 ; Plugins
 Source: "..\build\rundir\{#ConfigName}\obs-plugins\64bit\*.dll"; DestDir: "{app}\obs-plugins\64bit"; Flags: ignoreversion skipifsourcedoesntexist
+
+; libobs data (shaders/effects, images, locale) - required for video init
+Source: "..\build\rundir\{#ConfigName}\data\libobs\*"; DestDir: "{app}\data\libobs"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 ; Plugin data (locale files, graphics-hook executables, compatibility data)
 Source: "..\build\rundir\{#ConfigName}\data\obs-plugins\*"; DestDir: "{app}\data\obs-plugins"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
