@@ -1,5 +1,6 @@
 #include "main-window.hpp"
 
+#include <cmath>
 #include <cstring>
 
 #include <QApplication>
@@ -43,8 +44,33 @@ static void DrawPreview(void *data, uint32_t cx, uint32_t cy)
 {
 	UNUSED_PARAMETER(data);
 
-	gs_set_viewport(0, 0, (int)cx, (int)cy);
+	gs_texture_t *tex = obs_get_main_texture();
+	if (!tex)
+		return;
+
+	const uint32_t tex_cx = gs_texture_get_width(tex);
+	const uint32_t tex_cy = gs_texture_get_height(tex);
+	if (!tex_cx || !tex_cy)
+		return;
+
+	/* Letterbox: scale the main canvas texture to fit the widget while
+	 * preserving aspect ratio, centered in the viewport. */
+	const float scale = fminf((float)cx / (float)tex_cx,
+				  (float)cy / (float)tex_cy);
+	const uint32_t draw_cx = (uint32_t)(tex_cx * scale);
+	const uint32_t draw_cy = (uint32_t)(tex_cy * scale);
+	const uint32_t x = (cx - draw_cx) / 2;
+	const uint32_t y = (cy - draw_cy) / 2;
+
+	gs_viewport_push();
+	gs_projection_push();
+	gs_set_viewport((int)x, (int)y, (int)draw_cx, (int)draw_cy);
+	gs_ortho(0.0f, (float)tex_cx, 0.0f, (float)tex_cy, -100.0f, 100.0f);
+
 	obs_render_main_texture();
+
+	gs_projection_pop();
+	gs_viewport_pop();
 }
 
 /* ------------------------------------------------------------------------ */

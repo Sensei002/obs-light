@@ -192,6 +192,11 @@ bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
 		return false;
 	}
 
+	/* Bind the encoders to the main video/audio outputs so the output
+	 * layer can initialize them ("media set" check in obs-encoder.c). */
+	obs_encoder_set_video(*videoEncoderOut, obs_get_video());
+	obs_encoder_set_audio(*audioEncoderOut, obs_get_audio());
+
 	return true;
 }
 
