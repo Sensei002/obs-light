@@ -216,6 +216,13 @@ bool Recorder::CreateEncoders(obs_encoder_t **videoEncoderOut,
 	return true;
 }
 
+obs_data_t *Recorder::BuildAudioEncoderSettings() const
+{
+	obs_data_t *settings = obs_data_create();
+	obs_data_set_int(settings, "bitrate", AppConfig::AudioBitrateKbps());
+	return settings;
+}
+
 std::string Recorder::BuildOutputPath() const
 {
 	time_t now = time(nullptr);
